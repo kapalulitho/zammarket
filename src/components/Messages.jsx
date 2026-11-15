@@ -1,11 +1,10 @@
 import ReplyTemplates from './ReplyTemplates';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { Icon, EmptyArt } from './Design';
 import { filterConversations, messageText, sellerReplySuggestions } from '../lib/messageTools';
 import { money, listingPhotos } from '../lib/listings';
 import { availability } from '../lib/availability';
-import { playBrandSting } from '../lib/sound';
 
 const whenMessage = value =>
   new Intl.DateTimeFormat('en-GB', {
@@ -27,7 +26,6 @@ export default function Messages({ user, ready, initialConversation, initialDraf
   const [hasOlder, setHasOlder] = useState(false);
   const [limit, setLimit] = useState(100);
   const [search, setSearch] = useState('');
-  const lastSeenId = useRef(null);
 
   useEffect(() => {
     if (!user || !ready) return;
@@ -71,7 +69,6 @@ export default function Messages({ user, ready, initialConversation, initialDraf
   useEffect(() => {
     if (!selected || !user || !ready) return;
     let active = true;
-    lastSeenId.current = null;
     async function load() {      if (document.hidden) return;
       try {
         const { data, error: failure } = await supabase.from('messages').select('*')
@@ -82,13 +79,6 @@ export default function Messages({ user, ready, initialConversation, initialDraf
           setHasOlder((data?.length ?? 0) > limit);
           setMessages((data ?? []).slice(0, limit).reverse());
           setError('');
-          // Signature sting: only when a NEW message from the other party
-          // arrives, never on first open or on your own messages.
-          const latest = data?.[0];
-          if (latest && latest.sender_id !== user.id) {
-            if (lastSeenId.current !== null && latest.id !== lastSeenId.current) playBrandSting();
-            lastSeenId.current = latest.id;
-          }
         }
       } catch { if (active) setError('Unable to refresh messages. Please retry.'); }
     }
