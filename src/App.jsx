@@ -353,7 +353,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
 
   async function messageSeller(product) {
     if(!user){onLogin();return;}
-    if (!featuresReady) {setActionError("Messaging is awaiting the approved database setup."); return;}
+    if (!featuresReady) {setActionError("Messaging is opening soon. Please check back shortly."); return;}
     if (startingConversation) return;
     setStartingConversation(true); setActionError("");
     try {

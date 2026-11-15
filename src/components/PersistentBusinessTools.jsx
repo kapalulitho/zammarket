@@ -11,7 +11,7 @@ export default function PersistentBusinessTools({user,kind,search=""}){
  const repository=useMemo(()=>createBusinessRepository(supabase,backendMode,user),[user]);
  const [data,setData]=useState(null),[revision,setRevision]=useState(0),[error,setError]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[edit,setEdit]=useState(null),[org,setOrg]=useState('');
  useEffect(()=>{if(backendMode!=='staging'||!user)return;let active=true;repository.load().then(value=>{if(active){setData(value);setError('');setOrg(current=>value.organisations.some(row=>row.id===current)?current:value.organisations[0]?.id||'');}}).catch(failure=>{if(active)setError(failure.message);});return()=>{active=false;};},[repository,revision,user]);
- if(backendMode!=='staging')return <div className="setup-notice"><strong>Persistent business tools await staging validation</strong><p>Company, accommodation and logistics saving is disabled on the production connection. Existing product/profile tools still work. Local previews below remain available.</p></div>;
+ if(backendMode!=='staging')return <div className="setup-notice"><strong>Saving is not open yet</strong><p>Saving companies, stays and logistics businesses is switched off on this connection for now. Your product and profile tools still work, and the previews below stay available.</p></div>;
  if(!user)return <p>Sign in to a staging test account to manage saved business drafts.</p>;
  const refresh=()=>setRevision(value=>value+1);
  async function perform(action,success){if(busy)return;setBusy(true);setError('');setMessage('');try{await action();setMessage(success);setEdit(null);refresh();}catch(failure){setError(failure.message);}finally{setBusy(false);}}

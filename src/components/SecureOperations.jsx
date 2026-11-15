@@ -15,7 +15,7 @@ export default function SecureOperations({user,onNavigate}){
   let active=true;
   if(backendMode!=='staging')return;
   repo.capability().then(value=>{
-   if(!active||value?.version!==1)throw new Error('The held secure backend is unavailable.');
+   if(!active||value?.version!==1)throw new Error('Secure testing tools are unavailable right now.');
    setCap(value);
    return repo.load();
   }).then(value=>{
@@ -56,7 +56,7 @@ export default function SecureOperations({user,onNavigate}){
  if(backendMode!=='staging')return <section className="platform-page">
   <span className="eyebrow">SECURE OPERATIONS</span>
   <h1>Payments, allocations, tickets & courses</h1>
-  <div className="setup-notice">These sensitive systems are disabled on the production connection. They require held migrations 036–040, isolated staging review and explicit activation.</div>
+  <div className="setup-notice">These sensitive systems are switched off for now. They need a final security review before they open, and only appear in the staging copy of the app.</div>
  </section>;
 
  if(!cap||!data)return <section className="platform-page">
@@ -354,7 +354,7 @@ function Moderation({cap,onNavigate}){
  return <div>
   <h2>Server-enforced moderation</h2>
   <p>Suspensions and content restrictions are decided through MFA-protected review. This page does not grant administration or remove content from the browser.</p>
-  <p className="setup-notice">Enforcement is {cap.moderation?'enabled in staging':'off'}. Production remains unchanged pending separate approval.</p>
+  <p className="setup-notice">Moderation enforcement is {cap.moderation?'on in staging':'off'}. Nothing changes outside staging.</p>
   <button onClick={()=>onNavigate('Admin Review')}>Open authorised review workspace</button>
  </div>;
 }
