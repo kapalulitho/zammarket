@@ -758,17 +758,17 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
           <>
             {page === "Home" && !search.trim() && <><HomeHero onNavigate={goTo}/><HomeDestinations onNavigate={goTo}/></>}
             {page==='Categories'&&<MarketplaceCategories onNavigate={goTo}/>}
-            {page==='Explore'&&<section className="member-welcome"><span className="eyebrow">SHOP</span><h1>Shop local finds.</h1><p>Browse by category, search or filter. No location tracking is used.</p></section>}
+            {page==='Explore'&&<section className="member-welcome"><span className="eyebrow">SHOP</span><h1>Shop local finds.</h1><p>Browse by category, search or filter — no location tracking is used.</p></section>}
             {page==='Explore'&&<><CoreJourneyGuide onNavigate={goTo} ready={featuresReady}/><SavedSearches key={user?.id||"guest"} owner={user?.id||"guest"} filters={{search,category,location:locationFilter,condition:conditionFilter,minPrice,maxPrice,status:statusFilter,sort}} onApply={query=>{setSearch(query.search);setCategory(query.category);setLocationFilter(query.location);setConditionFilter(query.condition);setMinPrice(query.minPrice);setMaxPrice(query.maxPrice);setStatusFilter(query.status);setSort(query.sort);goTo("Explore");}}/></>}
             {page==='Home'&&recentProducts.length>0&&<section className="recent-section"><div className="section-heading"><div><span className="eyebrow">YOUR CURRENT VISIT</span><h2>Recently viewed.</h2><p className="muted">Kept only in memory for this visit.</p></div><button className="text-button" onClick={()=>setRecentIds([])}>Clear history</button></div><div className="product-grid">{recentProducts.slice(0,4).map(product=><ProductCard key={product.id} product={product} onOpen={openProduct} formatMoney={money}/>)}</div></section>}
 
             <section className="category-section" hidden={page==='Saved'||(page==='Home'&&!search.trim())}>
-              <div className="section-heading">
+              {page==='Home'&&<div className="section-heading">
                 <div>
                   <span className="eyebrow">SHOPPING PRODUCT CATEGORIES</span>
                   <h2>A little of everything. <span className="heading-soft">Something for you.</span></h2>
                 </div>
-              </div>
+              </div>}
               <div className="category-list">
                 {categories.map((item, index) => (
                   <button
@@ -790,8 +790,8 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
             <section className={`listings-section ${page==='Home'&&!search.trim()?'home-feed':''}`} id="listings" hidden={page === "Categories"}>
               <div className="section-heading listings-heading">
                 <div>
-                  <span className="eyebrow">{page==='Saved'?'KEPT FOR ANOTHER LOOK':'FRESH FROM THE NEIGHBOURHOOD'}</span>
-                  <ListingsHeading>{page==='Saved'?'Your saved finds.':search.trim() ? `Finds for “${search}”` : category === "All Items" ? page==='Home'?'Featured products':'Discover your next favourite.' : category}</ListingsHeading>
+                  {(page!=='Explore'||search.trim()||category!=='All Items')&&<span className="eyebrow">{page==='Saved'?'KEPT FOR ANOTHER LOOK':search.trim()?'SEARCH RESULTS':'FRESH FROM THE NEIGHBOURHOOD'}</span>}
+                  {(page!=='Explore'||search.trim()||category!=='All Items')&&<ListingsHeading>{page==='Saved'?'Your saved finds.':search.trim() ? `Finds for “${search}”` : category === "All Items" ? page==='Home'?'Featured products':'Discover your next favourite.' : category}</ListingsHeading>}
                   <p className="muted">{filteredProducts.length} listings</p>
                 </div>
                 <select

@@ -1,4 +1,14 @@
 import {showDeveloperNotes} from '../lib/devNotes';
 import {Icon} from './Design';
 export default function CoreJourneyGuide(props){if(!showDeveloperNotes)return null;return <CoreJourneyGuideInner {...props}/>;}
-function CoreJourneyGuideInner({onNavigate,ready}){return <details className="workflow-notebook journey-guide"><summary>Buying and selling on ZamNexus</summary><div className="journey-columns"><div><h3>Buying</h3><ol><li>Search products and compare details/photos.</li><li>Check the status and contact the seller.</li><li>Save useful items or plan a cart.</li><li>Agree stock, collection and payment directly.</li></ol><button className="text-button" onClick={()=>onNavigate('Saved')}><Icon name="heart" size={16}/> Saved products</button><button className="text-button" onClick={()=>onNavigate('Messages')}>Product chats</button></div><div><h3>Selling</h3><ol><li>Complete your verified account profile.</li><li>Post clear photos, price and location.</li><li>Manage availability and buyer messages.</li><li>Mark sold or temporarily unavailable when needed.</li></ol><button className="text-button" onClick={()=>onNavigate('Post')}>Post an item</button><button className="text-button" onClick={()=>onNavigate('My Listings')}>My Listings</button></div></div><p className="muted">{ready?'Product management and chat capabilities are connected. Supabase still checks ownership and membership.':'Backend readiness has not been confirmed for management and messaging.'} Cart checkout, company staff permissions and new service bookings remain unavailable.</p></details>;}
+function CoreJourneyGuideInner({onNavigate}){
+ return <details className="workflow-notebook journey-guide"><summary>New here? How ZamNexus works</summary>
+  <p className="muted">Buyers: search, check the status, save or message the seller, then agree collection and payment directly. Sellers: complete your profile once, post with clear photos and a fair price, then manage availability and replies from My Listings.</p>
+  <div className="journey-links">
+   <button className="text-button" onClick={()=>onNavigate('Post')}><Icon name="plus" size={16}/> Post an item</button>
+   <button className="text-button" onClick={()=>onNavigate('My Listings')}><Icon name="bag" size={16}/> My Listings</button>
+   <button className="text-button" onClick={()=>onNavigate('Saved')}><Icon name="heart" size={16}/> Saved</button>
+   <button className="text-button" onClick={()=>onNavigate('Messages')}><Icon name="message" size={16}/> Messages</button>
+  </div>
+ </details>;
+}
