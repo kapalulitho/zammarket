@@ -1,0 +1,3 @@
+export function filterConversations(rows,search=''){const terms=search.trim().toLowerCase().split(/\s+/).filter(Boolean);return rows.filter(row=>terms.every(term=>String(row.listing_title||'').toLowerCase().includes(term)));}
+export function messageText(value){const text=String(value??'').trim();if(!text||text.length>4000)throw new Error('Enter a message of 1–4,000 characters.');return text;}
+export const sellerReplySuggestions=['Thanks for your interest. This item is still available.','Which town are you in, and when would you like to collect?','Please check the photos and description, and let me know what you would like to clarify.'];

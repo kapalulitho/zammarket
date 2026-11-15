@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 440" fill="none">
+ <defs>
+  <linearGradient id="bag" x1="190" y1="178" x2="365" y2="390" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset="1" stop-color="#c9dcff"/></linearGradient>
+  <linearGradient id="phone" x1="84" y1="67" x2="199" y2="246"><stop stop-color="#f2f7ff"/><stop offset="1" stop-color="#9ac4ff"/></linearGradient>
+  <linearGradient id="screen" x1="111" y1="106" x2="166" y2="185"><stop stop-color="#5c9fff"/><stop offset="1" stop-color="#2960d9"/></linearGradient>
+  <filter id="shadow" x="-50%" y="-50%" width="200%" height="220%"><feDropShadow dy="16" stdDeviation="15" flood-color="#051b70" flood-opacity=".2"/></filter>
+ </defs>
+ <circle cx="290" cy="225" r="173" stroke="#fff" stroke-opacity=".12"/><circle cx="290" cy="225" r="136" stroke="#fff" stroke-opacity=".14"/>
+ <ellipse cx="285" cy="377" rx="161" ry="17" fill="#092c9a" fill-opacity=".34"/>
+ <g transform="rotate(-15 143 158)" filter="url(#shadow)">
+  <rect x="81" y="52" width="126" height="213" rx="27" fill="#132f76"/>
+  <rect x="86" y="56" width="116" height="204" rx="23" fill="url(#phone)"/>
+  <rect x="120" y="64" width="47" height="11" rx="5.5" fill="#183c83"/>
+  <circle cx="145" cy="151" r="44" fill="url(#screen)"/><path d="m127 154 12 12 26-30" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="114" y="219" width="60" height="5" rx="2.5" fill="#557dbb" fill-opacity=".6"/>
+ </g>
+ <g transform="rotate(13 400 155)" filter="url(#shadow)">
+  <rect x="334" y="69" width="141" height="151" rx="28" fill="#4389fa" stroke="#89b8ff" stroke-opacity=".6"/>
+  <path d="M364 148v-15a40 40 0 0 1 80 0v15" stroke="#e9f2ff" stroke-width="12" stroke-linecap="round"/>
+  <rect x="354" y="138" width="23" height="41" rx="10" fill="#fff"/><rect x="431" y="138" width="23" height="41" rx="10" fill="#fff"/>
+ </g>
+ <g filter="url(#shadow)">
+  <path d="M236 204v-40a41 41 0 0 1 82 0v40" stroke="#c4dcff" stroke-width="14" stroke-linecap="round"/>
+  <path d="M208 181h139l17 158a22 22 0 0 1-22 24H211a22 22 0 0 1-22-24l19-158Z" fill="url(#bag)"/>
+  <path d="M208 181h23l-7 182h-13a22 22 0 0 1-22-24l19-158Z" fill="#abcaff"/>
+  <path d="M242 235h70l-66 70h72" stroke="#2462e8" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="236" cy="204" r="5" fill="#2761ce"/><circle cx="319" cy="204" r="5" fill="#2761ce"/>
+ </g>
+ <g transform="rotate(-9 422 316)" filter="url(#shadow)">
+  <path d="M357 278c12 3 17-1 21-15l36 15 12 29 46 13c11 3 17 12 17 23v9H350v-20l7-54Z" fill="#f4f8ff"/>
+  <path d="m378 263 36 15 12 29-27 6-28-24 7-26Z" fill="#9bc0ff"/>
+  <path d="M350 338h138v14H350v-14Z" fill="#c1d9ff"/><path d="m402 282-17 6m23 4-16 7m22 3-15 7" stroke="#2a5ab2" stroke-width="4" stroke-linecap="round"/>
+ </g>
+ <g fill="#a9d1ff"><path d="m297 40 3 10 10 3-10 3-3 10-3-10-10-3 10-3 3-10Z"/><path d="m77 299 4 12 12 4-12 4-4 12-4-12-12-4 12-4 4-12Z"/><circle cx="478" cy="247" r="4"/><circle cx="242" cy="72" r="3"/><circle cx="109" cy="345" r="3"/></g>
+ <g transform="rotate(-7 112 280)"><rect x="53" y="250" width="141" height="51" rx="15" fill="white" filter="url(#shadow)"/><circle cx="78" cy="275" r="12" fill="#e7f6f0"/><path d="m72 275 4 4 8-9" stroke="#238365" stroke-width="2.5" stroke-linecap="round"/><text x="99" y="279" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#15366e">Find it. Love it.</text></g>
+</svg>

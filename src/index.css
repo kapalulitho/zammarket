@@ -1,0 +1,4 @@
+/* Shared document defaults. Marketplace styling lives in App.css. */
+#root { min-height: 100svh; }
+:root { color-scheme: light; }
+[hidden] { display: none !important; }

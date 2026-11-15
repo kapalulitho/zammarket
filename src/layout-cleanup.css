@@ -1,0 +1,51 @@
+/* Show each navigation destination once per screen size */
+@media(max-width:600px){.account-nav{display:none}.nav-menu-panel nav button.dup-bottom{display:none}}
+@media(min-width:601px){.nav-menu-panel nav button.dup-desktop{display:none}}
+
+/* Shared category action bar: POST | MY LISTINGS | MESSAGES */
+.category-actions{margin:14px 0 6px}
+.category-actions-row{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr) minmax(0,1fr);gap:8px}
+.category-actions-row button{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 8px;min-height:46px;font-weight:700;line-height:1.2;text-align:center}
+.category-notice{margin:10px 2px 0;font-size:.92rem;opacity:.85}
+
+/* Back arrow shown on Post / My Listings / Messages when opened from a category */
+.back-link{display:inline-flex;align-items:center;gap:6px;margin:10px 0 4px;padding:10px 14px;border:0;border-radius:12px;background:transparent;font-weight:700;font-size:1rem;color:inherit;cursor:pointer}
+.back-link:hover,.back-link:focus-visible{background:rgba(37,99,235,.1)}
+
+/* Step-by-step posting forms */
+.step-header h2{margin:2px 0 0}
+.step-header .back-link{margin-left:-8px}
+.step-bar{height:6px;border-radius:99px;background:rgba(0,0,0,.1);overflow:hidden;margin:8px 0 16px}
+.step-bar span{display:block;height:100%;background:#2563eb;border-radius:inherit;transition:width .2s}
+
+/* My Listings owner cards: photo, status and actions in one aligned row */
+.my-listing{display:grid;grid-template-columns:92px minmax(0,1fr);gap:16px;align-items:start}
+.my-listing-photo{width:92px;height:92px;display:grid;place-items:center;overflow:hidden;border:1px solid var(--border);border-radius:12px;background:var(--surface-subtle);color:var(--secondary)}
+.my-listing-photo img{width:100%;height:100%;object-fit:cover}
+.my-listing-body{min-width:0}
+.my-listing-header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0}
+.my-listing-header h2{margin:0;font-size:18px;letter-spacing:-.4px;overflow-wrap:anywhere}
+.my-listing-price{margin:6px 0 0;font-weight:700;color:var(--navy)}
+.my-listing-meta{display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 0;font-size:12px;color:var(--muted)}
+.my-listing-meta svg{vertical-align:-2px;margin-right:3px}
+.my-listing .listing-actions{margin:12px 0 0}
+.listing-error{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+@media(max-width:560px){.my-listing{grid-template-columns:64px minmax(0,1fr);gap:12px}.my-listing-photo{width:64px;height:64px}}
+
+/* Conversations: product context in the inbox and thread header */
+.conversation-button{display:flex;align-items:center;gap:10px;text-align:left}
+.conversation-thumb{flex:0 0 auto;width:40px;height:40px;display:grid;place-items:center;overflow:hidden;border:1px solid var(--border);border-radius:10px;background:var(--surface-subtle);color:var(--secondary)}
+.conversation-thumb img{width:100%;height:100%;object-fit:cover}
+.conversation-copy{min-width:0;display:grid}
+.conversation-copy small{color:var(--muted);font-size:11px;margin-top:3px}
+.message-listing{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-subtle);margin:14px 0}
+.message-listing-photo{flex:0 0 auto;width:52px;height:52px;display:grid;place-items:center;overflow:hidden;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--secondary)}
+.message-listing-photo img{width:100%;height:100%;object-fit:cover}
+.message-listing-body{flex:1;min-width:0;display:grid;gap:6px}
+.message-listing-body strong{overflow-wrap:anywhere}
+.message-listing .text-button{flex-shrink:0}
+@media(max-width:560px){.message-listing{flex-wrap:wrap}.message-listing .text-button{width:100%}}
+
+/* Seller profile: message action under each product card */
+.seller-product-cell{display:grid;gap:6px;min-width:0}
+.seller-product-cell .text-button{justify-self:start}

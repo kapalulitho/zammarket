@@ -1,0 +1,4 @@
+import {useEffect,useState} from 'react';
+import {supabase} from '../supabase';
+import ImageGallery from './ImageGallery';
+export default function BusinessImageGallery({paths=[],title}){const [slides,setSlides]=useState([]);useEffect(()=>{let active=true,timer;async function load(){const results=await Promise.all(paths.map(async path=>{try{const {data,error}=await supabase.storage.from('business-service-media').createSignedUrl(path,60);return error?null:{src:data?.signedUrl};}catch{return null;}}));if(active){setSlides(results.filter(row=>row?.src));timer=setTimeout(load,45000);}}load();return()=>{active=false;clearTimeout(timer);};},[paths]);return <><ImageGallery slides={slides} title={title}/>{paths.length>slides.length&&<p>Some saved photos could not be signed. Original files are preserved.</p>}</>;}

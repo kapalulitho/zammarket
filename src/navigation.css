@@ -1,0 +1,21 @@
+/* Five-destination navigation: My Activity and Account pages */
+.hub-page{max-width:900px;margin:34px auto 90px}
+.hub-page h1{font-size:32px;letter-spacing:-1px;margin:6px 0 8px;color:var(--ink)}
+.hub-page h2{font-size:18px;margin:26px 0 12px;color:var(--ink)}
+.hub-intro{color:var(--muted);margin:0 0 16px}
+.hub-sell{display:inline-flex;align-items:center;gap:8px;margin:4px 0 6px}
+.hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.hub-card{display:flex;align-items:center;gap:14px;text-align:left;padding:16px;min-height:72px;background:var(--surface,#fff);color:var(--text,inherit);border:1px solid var(--border);border-radius:16px;cursor:pointer;font:inherit;box-shadow:var(--shadow)}
+.hub-card:hover,.hub-card:focus-visible{border-color:var(--blue);outline:none}
+.hub-icon{display:grid;place-items:center;flex:0 0 44px;height:44px;border-radius:12px;background:rgba(16,28,50,.1);color:var(--blue)}
+.hub-text{display:grid;gap:3px}
+.hub-text strong{font-size:16px}
+.hub-text small{color:var(--muted);font-size:13px;line-height:1.35}
+.hub-signout{margin-top:22px;min-height:48px;padding:0 22px;border:1px solid var(--border);border-radius:14px;background:var(--surface,#fff);color:var(--text,inherit);font:inherit;font-weight:600;cursor:pointer}
+@media(max-width:600px){.hub-page{margin-top:20px}.hub-page h1{font-size:26px}.hub-grid{grid-template-columns:1fr}}
+
+/* Bottom bar: all five buttons look the same; only the current page is highlighted.
+   (The old design raised the middle button as a "Sell" button; the middle button is now Messages.) */
+.bottom-nav .nav-item:nth-child(3)>span{height:auto;width:auto;margin-top:0;background:none;color:inherit;border-radius:0;box-shadow:none}
+.bottom-nav .nav-item.selected{color:var(--blue)}
+.bottom-nav .nav-item.selected small{font-weight:700}

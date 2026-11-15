@@ -1,0 +1,53 @@
+/* ZamNexus refresh: section header, plain notices, room above the bottom bar */
+.section-header{margin:14px 0 8px}
+.section-header-row{display:flex;align-items:center;gap:10px}
+.section-header h1{flex:1;margin:0;font-size:24px;letter-spacing:-.5px;color:var(--ink)}
+.section-back{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--border);border-radius:12px;background:transparent;color:inherit;cursor:pointer}
+.section-back svg{transform:rotate(180deg)}
+.section-post{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px}
+.section-mine{margin:8px 0 0 54px;padding:0;border:0;background:none;color:var(--blue);font:inherit;font-weight:600;cursor:pointer}
+.coming-soon{display:inline-block;margin:10px 0;padding:6px 12px;border-radius:999px;background:rgba(16,28,50,.1);color:var(--blue);font-size:13px;font-weight:600}
+@media(max-width:600px){body{padding-bottom:84px}}
+
+/* Filters tucked behind one button, tidy tabs, quiet empty states, notes only on staging */
+.filter-panel{margin:0 0 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.filter-panel>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;font-weight:600;cursor:pointer;list-style:none;color:var(--ink)}
+.filter-panel>summary::-webkit-details-marker{display:none}
+.filter-panel[open]>summary{border-bottom:1px solid var(--border)}
+.filter-panel .listing-filters{margin:0;border:0;border-radius:0;flex-wrap:wrap}
+.module-tabs{display:flex;gap:6px;padding:4px;margin:0 0 14px;background:var(--surface-subtle);border:1px solid var(--border);border-radius:12px;overflow-x:auto}
+.module-tabs button{flex:1;white-space:nowrap;min-height:40px;padding:0 12px;border:0;border-radius:9px;background:transparent;color:var(--secondary);font:inherit;font-weight:600;cursor:pointer}
+.module-tabs button[aria-pressed=true]{background:var(--navy);color:#fff}
+:root[data-theme=dark] .module-tabs button[aria-pressed=true]{background:var(--gold);color:#101C32}
+.empty-state{text-align:center;padding:36px 16px}
+.empty-state h2{font-size:18px;color:var(--ink)}
+.empty-state p{display:none}
+.setup-notice{display:none}
+html[data-staging] .setup-notice{display:block}
+
+/* Forms: full-width fields with the label above, same look everywhere */
+.module-form{display:grid;gap:14px}
+.module-form label{display:grid;gap:6px;font-size:14px;font-weight:600;color:var(--ink)}
+.module-form input,.module-form select,.module-form textarea{width:100%;box-sizing:border-box;min-height:46px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font:inherit;font-weight:400}
+.module-form textarea{min-height:92px}
+.module-form input:focus,.module-form select:focus,.module-form textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
+@media(max-width:700px){.workspace-columns{grid-template-columns:1fr}}
+
+.smart-summary{margin:0 0 10px;color:var(--secondary);font-size:14px}.smart-summary:empty{display:none}
+.campus-bar{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.campus-tiles{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+.campus-tile{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.campus-tile:disabled{opacity:.55;cursor:default}.campus-tile small{color:var(--secondary);font-weight:400}
+
+.campus-select{display:grid;gap:6px;max-width:420px;font-weight:600;color:var(--ink)}
+.campus-select select{min-height:48px;padding:0 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font:inherit;font-weight:400}
+
+.business-workspace h2{font-size:18px;margin:22px 0 10px}
+.business-workspace .primary-button{margin:6px 0 14px}
+
+.post-step[hidden]{display:none!important}
+.post-step{display:grid;gap:14px}
+.post-progress{margin:0 0 10px;color:var(--secondary);font-size:14px;font-weight:600}
+.post-nav{display:flex;gap:10px;margin-top:16px}.post-nav button{flex:1;min-height:48px}
+.post-review dl{display:grid;gap:8px;margin:0}.post-review dl div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.post-review dt{color:var(--secondary)}.post-review dd{margin:0;font-weight:600;text-align:right}

@@ -1,0 +1,23 @@
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+export async function checkDiscoveryCatalogues(db,{a,b,c,role}){
+ await db.exec('reset role');const oldPolicies=(await db.query('select * from pg_policies')).rows;for(const file of ['020_specialist_catalogues_HOLD_DRAFT.sql','021_activity_trends_HOLD_DRAFT.sql'])await db.exec(await fs.readFile('supabase/review/'+file,'utf8'));
+ for(const row of oldPolicies)assert.deepEqual((await db.query('select * from pg_policies where schemaname=$1 and tablename=$2 and policyname=$3',[row.schemaname,row.tablename,row.policyname])).rows[0],row);
+ await role('authenticated',a);const listing=(await db.query("insert into public.specialist_listings(kind,title,description,category,location,organisation,price,unit,licence) values('digital','Test template','Non-sensitive template description','Templates','Online','Test creator',50,'per download','Personal use licence') returning id")).rows[0].id;
+ await assert.rejects(db.query("update public.specialist_listings set status='published' where id=$1",[listing]),/disabled/);await db.query("insert into storage.objects(bucket_id,name) values('digital-products',$1)",[`${a}/private.zip`]);const asset=(await db.query('insert into public.digital_private_assets(listing_id,path,version_label) values($1,$2,$3) returning id',[listing,`${a}/private.zip`,'v1'])).rows[0].id;
+ await assert.rejects(db.query("update public.digital_private_assets set scan_status='approved' where id=$1",[asset]));
+ await role('authenticated',b);assert.equal((await db.query('select * from public.specialist_listings')).rows.length,0);assert.equal((await db.query("select * from storage.objects where bucket_id='digital-products'")).rows.length,0);await assert.rejects(db.query('insert into public.digital_entitlements(asset_id,buyer_id,purchase_reference) values($1,$2,$3)',[asset,b,'forged-receipt']));
+ await db.exec('reset role');await db.query('insert into public.digital_entitlements(asset_id,buyer_id,purchase_reference) values($1,$2,$3)',[asset,b,'local-fixture-only']);
+ await role('authenticated',b);assert.equal((await db.query('select public.digital_download_eligible($1) eligible',[asset])).rows[0].eligible,false);
+ await db.exec('reset role');await db.query("update public.digital_private_assets set scan_status='approved' where id=$1",[asset]);
+ await role('authenticated',b);assert.equal((await db.query('select public.digital_download_eligible($1) eligible',[asset])).rows[0].eligible,true);assert.equal((await db.query("select * from storage.objects where bucket_id='digital-products'")).rows.length,0,'buyer cannot mint their own Storage signed URLs');
+ await db.exec('reset role');await db.query('update public.digital_entitlements set revoked_at=now() where asset_id=$1',[asset]);
+ await role('authenticated',b);assert.equal((await db.query('select public.digital_download_eligible($1) eligible',[asset])).rows[0].eligible,false);await assert.rejects(db.query('select * from public.discovery_activity'));await assert.rejects(db.query("insert into public.discovery_topics(kind,label) values('search','Forged')"));
+ await db.exec('reset role');const topic=(await db.query("insert into public.discovery_topics(kind,label,location,active) values('service','Local fixture','Lusaka',true) returning id")).rows[0].id;
+ await db.query('insert into public.discovery_activity(topic_id,actor_token_hash,action,bucket_start) values($1,$2,$3,now())',[topic,'a'.repeat(64),'click']);await assert.rejects(db.query('insert into public.discovery_activity(topic_id,actor_token_hash,action,bucket_start) values($1,$2,$3,now())',[topic,'a'.repeat(64),'click']));
+ await assert.rejects(db.query("insert into public.discovery_rollups values($1,now(),24,1,10,true)",[topic]));await db.query('insert into public.discovery_rollups values($1,now(),24,5,10,true)',[topic]);
+ await role('anon');assert.equal((await db.query('select * from public.discovery_trends')).rows.length,0);await assert.rejects(db.query('select * from public.discovery_activity'));
+ await db.exec('reset role');await db.exec('update public.discovery_settings set publish_trends=true');await role('anon');const trend=(await db.query('select * from public.discovery_trends')).rows[0];assert.equal(trend.label,'Local fixture');assert.equal(trend.actor_token_hash,undefined);
+ await role('authenticated',c);assert.equal((await db.query('select * from public.digital_entitlements')).rows.length,0);
+ console.log('020/021 local checks passed: publication gate, private/quarantined assets, no client purchase/scan forgery, mediated-download eligibility/revocation, no buyer Storage URL minting, private deduplicated activity, aggregate threshold and disabled trend publication.');
+}

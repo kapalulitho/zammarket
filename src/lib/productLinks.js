@@ -1,0 +1,2 @@
+export function productIdFromSearch(search){const values=new URLSearchParams(search).getAll('product');if(!values.length)return null;return values.length===1&&/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(values[0])?values[0]:'invalid';}
+export function productLink(id){if(!/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(String(id)))throw new Error('Invalid product reference.');return '/home?product='+encodeURIComponent(id);}

@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {productIdFromSearch,productLink} from '../src/lib/productLinks.js';
+import {messageText,filterConversations,sellerReplySuggestions} from '../src/lib/messageTools.js';
+import {planningText,campaignScenario} from '../src/lib/planningExport.js';
+test('product links preserve valid references and reject ambiguous/path input',()=>{const id='388abe0b-0864-4bc0-b970-f97b680bfc60';assert.equal(productIdFromSearch(productLink(id).split('?')[1]),id);assert.equal(productIdFromSearch('?product=1&product=2'),'invalid');assert.equal(productIdFromSearch('?product=..%2Fprivate'),'invalid');assert.equal(productIdFromSearch(''),null);assert.throws(()=>productLink('javascript:bad'));});
+test('conversation search combines words and message boundaries match UI',()=>{assert.deepEqual(filterConversations([{listing_title:'Blue phone Lusaka'},{listing_title:'Table'}],'phone blue').map(row=>row.listing_title),['Blue phone Lusaka']);assert.equal(messageText(' Hello seller '),'Hello seller');assert.throws(()=>messageText(' '));assert.throws(()=>messageText('x'.repeat(4001)));assert.ok(sellerReplySuggestions.every(row=>messageText(row)));});
+test('portable notes remain explicitly unsent planning',()=>{const text=planningText('Test service','Non-sensitive outline',['Prepare details','Review terms'],[1]);assert.match(text,/NOT SUBMITTED/);assert.match(text,/\[ \] Prepare/);assert.match(text,/\[x\] Review/);assert.match(text,/Non-sensitive/);});
+test('campaign scenarios use user assumptions, never infer sales',()=>{const value=campaignScenario({budget:100,cpm:20,click_rate:2});assert.equal(value.impressions,5000);assert.equal(value.clicks,100);assert.equal(value.revenue,undefined);assert.throws(()=>campaignScenario({budget:'',cpm:20,click_rate:2}));assert.throws(()=>campaignScenario({budget:100,cpm:0,click_rate:2}));assert.throws(()=>campaignScenario({budget:100,cpm:20,click_rate:101}));});

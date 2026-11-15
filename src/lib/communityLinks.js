@@ -1,0 +1,3 @@
+const paths={job:'/jobs',event:'/events',service:'/services',learning:'/learning'};
+export function communityEntryId(search){const params=new URLSearchParams(search);if(!params.has('entry'))return null;const id=params.get('entry');return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id||'')?id:'invalid';}
+export function communityEntryUrl(origin,item){if(!paths[item?.kind]||item.local_only||item.status!=='published'||communityEntryId('?entry='+encodeURIComponent(item.id))==='invalid')throw new Error('Only published, saved listings can be shared.');return new URL(paths[item.kind]+'?entry='+encodeURIComponent(item.id),origin).href;}

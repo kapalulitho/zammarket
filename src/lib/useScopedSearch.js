@@ -1,0 +1,2 @@
+import {useEffect,useState} from 'react';
+export function useScopedSearch(initial,page){const [search,setSearch]=useState(initial);useEffect(()=>{const update=event=>{if(event.detail?.page===page)setSearch(String(event.detail.text||''));};window.addEventListener('zammarket-section-search',update);return()=>window.removeEventListener('zammarket-section-search',update);},[page]);return [search,setSearch];}

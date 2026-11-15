@@ -1,0 +1,5 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseStagingConfiguration,stagingConfigurationStatus} from '../src/lib/stagingConfiguration.js';
+test('staging checklist reports names/status only and handles quoted values/BOM',()=>{const env=parseStagingConfiguration('\uFEFF# fixture\nVITE_ZAMMARKET_ENV=staging\nVITE_STAGING_PROJECT_REF="REPLACE_WITH_REF"\nVITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_fixture_secret_text');const rows=stagingConfigurationStatus(env);assert.equal(rows.find(row=>row.name==='VITE_SUPABASE_URL').status,'MISSING');assert.equal(rows.find(row=>row.name==='VITE_STAGING_PROJECT_REF').status,'PLACEHOLDER');assert.ok(!JSON.stringify(rows).includes('fixture_secret_text'));});
+test('ambiguous/misnamed configuration fails without echoing values',()=>{for(const source of ['VITE_ZAMMARKET_ENV=staging\nVITE_ZAMMARKET_ENV=production','SERVICE_ROLE_KEY=secret_fixture','VITE_SUPABASE_URL="secret_fixture','secret_fixture'])assert.throws(()=>parseStagingConfiguration(source),error=>!error.message.includes('secret_fixture'));});
