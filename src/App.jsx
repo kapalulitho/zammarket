@@ -39,6 +39,7 @@ import {savedListingIds,savedProducts} from "./lib/saved";
 import {filterProducts,rememberViewed,compareSelection} from './lib/discovery';
 import {desktopNavigation,moreNavigation,zambiaProvinces} from './config/platform';
 import ThemeControl from './components/ThemeControl';
+import InstallApp from './components/InstallApp';
 import ProductCard from './components/ProductCard';
 import ZambiaLocationFields from './components/ZambiaLocationFields';
 import {HomeDestinations,LocalBusinessPreview} from './components/HomeDiscovery';
@@ -505,7 +506,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
     <div className={`app-shell ${compareIds.length?'has-comparison':''}`}>
       <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="topbar">
-        <details className="nav-menu" ref={menuRef} onKeyDown={event=>{if(event.key==='Escape'){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus();}}}><summary aria-label="Open ZamNexus navigation"><Icon name="menu"/></summary><div className="nav-menu-panel"><span className="eyebrow">YOUR ZAMNEXUS</span><nav aria-label="All services and pages">{[...desktopNavigation,...moreNavigation].map(([name,icon])=><button key={name} className={[desktopNavigation.some(row=>row[0]===name)?'dup-desktop':'',desktopNavigation.some(row=>row[0]===name)?'dup-bottom':''].join(' ').trim()||undefined} onClick={()=>goTo(navPage(name))}><Icon name={icon} size={18}/>{name==='Post'?'Sell':name}</button>)}</nav><ThemeControl/></div></details>
+        <details className="nav-menu" ref={menuRef} onKeyDown={event=>{if(event.key==='Escape'){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus();}}}><summary aria-label="Open ZamNexus navigation"><Icon name="menu"/></summary><div className="nav-menu-panel"><span className="eyebrow">YOUR ZAMNEXUS</span><nav aria-label="All services and pages">{[...desktopNavigation,...moreNavigation].map(([name,icon])=><button key={name} className={[desktopNavigation.some(row=>row[0]===name)?'dup-desktop':'',desktopNavigation.some(row=>row[0]===name)?'dup-bottom':''].join(' ').trim()||undefined} onClick={()=>goTo(navPage(name))}><Icon name={icon} size={18}/>{name==='Post'?'Sell':name}</button>)}</nav><InstallApp/><ThemeControl/></div></details>
         <button className="brand" onClick={() => goTo("Home")}>
           <Brand />
         </button>
