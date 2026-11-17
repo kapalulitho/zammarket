@@ -144,16 +144,17 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
   const [sellerContact, setSellerContact] = useState(null);
   useEffect(() => {
     setSellerContact(null);
-    if (!selectedProduct || !user) return;
+    if (!selectedProduct?.user_id || !user) return;
     let active = true;
-    supabase.from('marketplace_profiles').select('whatsapp,show_whatsapp').eq('id', selectedProduct.user_id).maybeSingle()
-      .then(({ data }) => { if (active) setSellerContact(data); });
+    supabase.rpc('public_seller_profile', { p_user_id: selectedProduct.user_id })
+      .then(({ data, error }) => { if (active && !error) setSellerContact(data); });
     return () => { active = false; };
-  }, [selectedProduct?.id, user]);
+  }, [selectedProduct?.id, user?.id]);
   const linkedProductId=useProductLink();
   const [productLinkError,setProductLinkError]=useState('');
   const [products, setProducts] = useState([]);
   const [likes, setLikes] = useState([]);
+  const [likeCounts, setLikeCounts] = useState({});
   const [likesLoading,setLikesLoading]=useState(!!user);
   const [likesError,setLikesError]=useState('');
   const [savingLike,setSavingLike]=useState(null);
@@ -279,8 +280,11 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
     finally {if(mounted.current)setLikesLoading(false);}
   }
   useEffect(()=>{
-    if(!user)return;
     let active=true;
+    setLikes([]);
+    setLikesLoading(!!user);
+    setLikesError('');
+    if(!user){setLikesLoading(false);return()=>{active=false;};}
     supabase.from('likes').select('listing_id, user_id').then(({data,error})=>{
       if(!active)return;
       if(error)throw error;
@@ -288,11 +292,26 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
     }).catch(()=>{if(active)setLikesError('Your saved products could not be loaded. Please retry.');})
       .finally(()=>{if(active)setLikesLoading(false);});
     return()=>{active=false;};
-  },[user]);
+  },[user?.id]);
   function retryLikes(){setLikesLoading(true);setLikesError('');return loadLikes();}
 
+  async function fetchLikeCounts(ids) {
+    if(!featuresReady || !ids.length)return {};
+    const {data,error}=await supabase.rpc('public_listing_like_counts',{p_listing_ids:ids});
+    if(error)throw error;
+    return Object.fromEntries((data??[]).map(row=>[String(row.listing_id),Number(row.like_count)]));
+  }
+  useEffect(()=>{
+    let active=true;
+    const ids=[...new Set([...products.map(item=>String(item.id)),...(selectedProduct?.id?[String(selectedProduct.id)]:[])])];
+    if(!featuresReady || !ids.length){setLikeCounts({});return()=>{active=false;};}
+    fetchLikeCounts(ids).then(counts=>{if(active)setLikeCounts(counts);})
+      .catch(()=>{if(active)setLikeCounts({});});
+    return()=>{active=false;};
+  },[products,selectedProduct?.id,featuresReady]);
+
   function likeCount(listingId) {
-    return likes.filter((l) => l.listing_id === listingId).length;
+    return likeCounts[String(listingId)] ?? 0;
   }
 
   const ownSavedIds=savedListingIds(likes,user?.id);
@@ -305,11 +324,8 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
     const wasSaved=isLiked(listingId);
     try {
     if (wasSaved) {
-      setLikes(
-        likes.filter(
-          (l) => !(l.listing_id === listingId && l.user_id === user.id)
-        )
-      );
+      setLikes(likes.filter((l) => !(String(l.listing_id) === String(listingId) && l.user_id === user.id)));
+      setLikeCounts(current => ({...current,[String(listingId)]:Math.max(0,likeCount(listingId)-1)}));
       const { error } = await supabase
         .from("likes")
         .delete()
@@ -318,13 +334,19 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
       if (error) throw error;
     } else {
       setLikes([...likes, { listing_id: listingId, user_id: user.id }]);
+      setLikeCounts(current => ({...current,[String(listingId)]:likeCount(listingId)+1}));
       const { error } = await supabase
         .from("likes")
         .insert({ listing_id: listingId, user_id: user.id });
       if (error) throw error;
     }
     } catch {
-      if(mounted.current){setActionError('This save could not be confirmed. Please refresh your saved products before retrying.');await loadLikes();}
+      if(mounted.current){
+        setActionError('This save could not be confirmed. Please refresh your saved products before retrying.');
+        await loadLikes();
+        const ids=[...new Set([...products.map(item=>String(item.id)),String(listingId)])];
+        try{setLikeCounts(await fetchLikeCounts(ids));}catch{/* Keep counts unavailable until the aggregate endpoint responds. */}
+      }
     } finally {likeBusy.current=false;if(mounted.current)setSavingLike(null);}
   }
 
@@ -616,7 +638,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
                     <button className="primary-button" disabled={startingConversation} onClick={() => messageSeller(selectedProduct)}>
                       {startingConversation ? "Opening..." : "Message Seller"}
                     </button>
-                    {sellerContact?.show_whatsapp && sellerContact.whatsapp &&
+                    {sellerContact?.whatsapp &&
                       <a className="secondary-button" href={`https://wa.me/${sellerContact.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi, is the "${selectedProduct.title}" still available?`)}`} target="_blank" rel="noopener noreferrer">WhatsApp Seller</a>}
                   </span>}
               </div>
