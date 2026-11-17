@@ -628,7 +628,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
                 >
                   {isLiked(selectedProduct.id) ? "♥" : "♡"}{" "}
                   {!user?'Sign in to save':savingLike===selectedProduct.id?'Saving...':isLiked(selectedProduct.id)?'Remove from saved':'Save product'}
-                  <small> · {likeCount(selectedProduct.id)} {likeCount(selectedProduct.id)===1?'save':'saves'}</small>
+                  {user&&<small> · {likeCount(selectedProduct.id)} {likeCount(selectedProduct.id)===1?'save':'saves'}</small>}
                 </button>
                 <br />
                 <button className="text-button" onClick={()=>{setSafetyTarget({kind:'listing',reference:String(selectedProduct.id)});goTo('Safety');}}>Prepare a listing report</button><button className="secondary-button" onClick={()=>addToCart(selectedProduct)}>Add to cart preview</button><button className="text-button" onClick={()=>goTo('Cart')}>Open cart ({cartLines.reduce((sum,row)=>sum+row.quantity,0)})</button><button className="secondary-button compare-product" aria-pressed={compareIds.includes(String(selectedProduct.id))} onClick={()=>toggleCompare(selectedProduct.id)}>{compareIds.includes(String(selectedProduct.id))?'Remove from comparison':'Compare product'}</button>
