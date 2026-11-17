@@ -1,4 +1,4 @@
-# ZamMarket visual identity
+# ZamNexus visual identity
 
 The local React/Vite redesign keeps Supabase integration and existing marketplace
 features. It does not run SQL, delete records/photos, or change production permissions.
