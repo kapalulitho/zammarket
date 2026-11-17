@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { Icon, EmptyArt } from './Design';
 import { filterConversations, messageText, sellerReplySuggestions } from '../lib/messageTools';
+import { loadReads, markConversationRead, saveReads } from '../lib/messageUnread';
 import { money, listingPhotos } from '../lib/listings';
 import { availability } from '../lib/availability';
 
@@ -27,10 +28,15 @@ export default function Messages({ user, ready, initialConversation, initialDraf
   const [limit, setLimit] = useState(100);
   const [search, setSearch] = useState('');
   // Public contact details of the other participant — only shown when they
-  // chose to share them, so in-app chat can hand over to WhatsApp or a call.
+  // chose to share their WhatsApp number, so in-app chat can hand over there.
   const [contact, setContact] = useState(null);
+  // Registered public identities of everyone on the other side of a thread,
+  // so conversation list, chat header and message bubbles show real names.
+  const [profiles, setProfiles] = useState({});
   const conversation = conversations.find(item => item.id === selected);
   const otherId = conversation && user ? (conversation.seller_id === user.id ? conversation.buyer_id : conversation.seller_id) : null;
+  // Public display name of a participant: shop name for business accounts, otherwise the username.
+  const partyName = id => {const row = profiles[String(id)];return row?.shop_name || row?.username || 'Marketplace member';};
 
   useEffect(() => {
     if (!user || !ready) return;
@@ -53,6 +59,23 @@ export default function Messages({ user, ready, initialConversation, initialDraf
   // Product context: one batched lookup for every conversation's listing, so
   // both the inbox and the thread can show what each chat is actually about.
   const conversationKey = conversations.map(item => item.listing_id).join(',');
+  const otherKey = conversations.map(item => item.seller_id === user?.id ? item.buyer_id : item.seller_id).join(',');
+  useEffect(() => {
+    if (!user || !ready) return;
+    const ids = [...new Set(conversations.map(item => item.seller_id === user.id ? item.buyer_id : item.seller_id).filter(Boolean))];
+    if (!ids.length) { setProfiles({}); return; }
+    let active = true;
+    supabase.from('marketplace_profiles')
+      .select('id,username,shop_name,account_type').in('id', ids)
+      .then(({ data }) => {
+        if (!active) return;
+        const next = {};
+        for (const row of data ?? []) next[row.id] = row;
+        setProfiles(next);
+      })
+      .catch(() => { if (active) setProfiles({}); });
+    return () => { active = false; };
+  }, [user, ready, otherKey]);
   useEffect(() => {
     if (!user || !ready) return;
     const ids = [...new Set(conversations.map(item => item.listing_id).filter(Boolean))];
@@ -71,13 +94,13 @@ export default function Messages({ user, ready, initialConversation, initialDraf
     return () => { active = false; };
   }, [user, ready, conversationKey]);
 
-  // Shared contact details of the person on the other side of this thread.
+  // Shared WhatsApp contact of the person on the other side of this thread.
   useEffect(() => {
     setContact(null);
     if (!otherId || !user || !ready) return;
     let active = true;
     supabase.from('marketplace_profiles')
-      .select('phone,whatsapp,show_phone,show_whatsapp').eq('id', otherId).maybeSingle()
+      .select('whatsapp,show_whatsapp').eq('id', otherId).maybeSingle()
       .then(({ data }) => { if (active) setContact(data); });
     return () => { active = false; };
   }, [otherId, user, ready]);
@@ -95,6 +118,8 @@ export default function Messages({ user, ready, initialConversation, initialDraf
           setHasOlder((data?.length ?? 0) > limit);
           setMessages((data ?? []).slice(0, limit).reverse());
           setError('');
+          // Viewing this thread counts as reading it, so the unread badge drops.
+          saveReads(markConversationRead(selected, loadReads()));
         }
       } catch { if (active) setError('Unable to refresh messages. Please retry.'); }
     }
@@ -126,11 +151,10 @@ export default function Messages({ user, ready, initialConversation, initialDraf
     <p>We're getting messaging ready. In the meantime, keep exploring local finds.</p></section>;
   const selectedListing = conversation ? listings[String(conversation.listing_id)] : null;
   return <section className="form-page"><div className="page-icon"><Icon name="message" size={25} /></div><span className="eyebrow">KEEP THE CONVERSATION GOING</span><h1>Your inbox.</h1>
-    <p className="muted">Conversations refresh every five seconds.</p>
     {error && <p role="alert">{error} <button onClick={() => setRefresh(value => value + 1)}>Retry</button></p>}
     <div className="messages-layout"><aside aria-label="Conversations">
       <label>Find a conversation<input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search product titles" /></label>
-      {loading ? <p role="status">Loading conversations...</p> : !conversations.length && <p>No conversations yet. Open a listing and choose Message Seller.</p>}
+      {loading ? <p role="status">Loading conversations...</p> : !conversations.length && <p>No conversations yet.</p>}
       {filterConversations(conversations, search).map(item => {
         const row = listings[String(item.listing_id)];
         const photo = row ? listingPhotos(row)[0] : null;
@@ -141,12 +165,12 @@ export default function Messages({ user, ready, initialConversation, initialDraf
           </span>
           <span className="conversation-copy">
             {item.listing_title}
-            <small>{item.seller_id === user.id ? 'Buyer enquiry' : 'Seller conversation'}</small>
+            <small>{partyName(item.seller_id === user.id ? item.buyer_id : item.seller_id)}</small>
           </span>
         </button>;
       })}
     </aside><div>
-      {selected ? <><h2>{conversation?.listing_title ?? 'Conversation'}</h2>
+      {selected ? <><h2>{otherId ? partyName(otherId) : 'Conversation'}</h2>
         {conversation?.listing_id && (selectedListing ? (
           <article className="message-listing">
             <span className="message-listing-photo" aria-hidden="true">
@@ -174,19 +198,16 @@ export default function Messages({ user, ready, initialConversation, initialDraf
         ) : (
           <p className="muted">This listing is no longer available, but the conversation is kept.</p>
         ))}
-        {contact && (conversation?.seller_id === user.id ? contact.show_phone && contact.phone : (contact.show_phone && contact.phone) || (contact.show_whatsapp && contact.whatsapp)) &&
+        {contact?.show_whatsapp && contact.whatsapp &&
           <div className="thread-contact">
-            <span>Reach {conversation?.seller_id === user.id ? 'this buyer' : 'the seller'} directly:</span>
-            {contact.show_whatsapp && contact.whatsapp && conversation?.seller_id !== user.id &&
-              <a className="text-button" href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">WhatsApp seller</a>}
-            {contact.show_phone && contact.phone &&
-              <a className="text-button" href={`tel:${contact.phone}`}>Call {conversation?.seller_id === user.id ? 'buyer' : 'seller'}</a>}
+            <span>WhatsApp {otherId ? partyName(otherId) : 'them'} directly:</span>
+            <a className="text-button" href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">Open WhatsApp</a>
             <small>Shown because they chose to share it.</small>
           </div>}
         {hasOlder && <button onClick={() => setLimit(value => value + 100)}>Load older messages</button>}
         <div className="message-history" role="log" aria-label="Conversation messages" aria-live="polite">
           {messages.map(message => <div className={`message ${message.sender_id === user.id ? 'mine' : ''}`} key={message.id}>
-            <strong>{message.sender_id === user.id ? 'You' : conversation?.seller_id === message.sender_id ? 'Seller' : 'Buyer'}</strong>
+            <strong>{message.sender_id === user.id ? 'You' : partyName(message.sender_id)}</strong>
             <p>{message.body}</p><small>{whenMessage(message.created_at)} (Zambia)</small>
           </div>)}
           {!messages.length && <p>No messages yet.</p>}

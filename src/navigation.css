@@ -14,6 +14,10 @@
 .hub-signout{margin-top:22px;min-height:48px;padding:0 22px;border:1px solid var(--border);border-radius:14px;background:var(--surface,#fff);color:var(--text,inherit);font:inherit;font-weight:600;cursor:pointer}
 @media(max-width:600px){.hub-page{margin-top:20px}.hub-page h1{font-size:26px}.hub-grid{grid-template-columns:1fr}}
 
+/* Unread message count badge next to the Messages label in the menu, desktop
+   navigation and the bottom bar. */
+.nav-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:999px;background:var(--blue,#1d4ed8);color:#fff;font-size:11px;font-weight:700;line-height:1;vertical-align:middle}
+
 /* Bottom bar: all five buttons look the same; only the current page is highlighted.
    (The old design raised the middle button as a "Sell" button; the middle button is now Messages.) */
 .bottom-nav .nav-item:nth-child(3)>span{height:auto;width:auto;margin-top:0;background:none;color:inherit;border-radius:0;box-shadow:none}

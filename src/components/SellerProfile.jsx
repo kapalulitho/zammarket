@@ -230,21 +230,9 @@ export default function SellerProfile({
             </p>
           )}
 
-          {publicProfile.phone && (
-            <p>
-              <a href={`tel:${publicProfile.phone}`}>
-                {publicProfile.phone}
-              </a>
-            </p>
-          )}
-
           {publicProfile.location && <p>{publicProfile.location}</p>}
         </div>
       )}
-
-      <p>
-        Explore this seller's available products and previously sold items.
-      </p>
 
       {error && (
         <p role="alert">
@@ -301,8 +289,7 @@ export default function SellerProfile({
       <section className="seller-available-products">
         <h2>Available Products</h2>
 
-        {loading ? (
-          <p role="status">Loading seller listings...</p>
+        {loading ? (          <p role="status">Loading seller listings...</p>
         ) : !error && catalogue.length === 0 ? (
           <p>No available products currently.</p>
         ) : (

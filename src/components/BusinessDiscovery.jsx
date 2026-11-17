@@ -270,12 +270,6 @@ function PublicDetails({ item, business, onBack, onNavigate }) {
       )}
 
       <div className="public-contacts">
-        {business.phone && (
-          <p>
-            <a href={'tel:' + business.phone}>Call business</a>
-          </p>
-        )}
-
         {business.whatsapp && (
           <p>
             <a

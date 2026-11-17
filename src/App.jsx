@@ -38,6 +38,7 @@ import { navigate, pageFromPath, pagePaths, publicPath } from "./lib/routes";
 import {savedListingIds,savedProducts} from "./lib/saved";
 import {filterProducts,rememberViewed,compareSelection} from './lib/discovery';
 import {desktopNavigation,moreNavigation,zambiaProvinces} from './config/platform';
+import useUnreadMessages from './lib/useUnreadMessages';
 import ThemeControl from './components/ThemeControl';
 import InstallApp from './components/InstallApp';
 import ProductCard from './components/ProductCard';
@@ -139,6 +140,16 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
   function addToCart(product){if(!user){onLogin();return;}if(availability(product,now)!=='Available'){setActionError('Only available listings can be added to this preview.');return;}const id=String(product.id);const prior=cartLines.find(row=>row.id===id);if(prior?.quantity>=20||cartLines.length>=30&&!prior){setActionError('Use at most 30 products and 20 units each.');return;}changeCart(prior?cartLines.map(row=>row.id===id?{...row,quantity:row.quantity+1}:row):[...cartLines,{id,quantity:1}]);setActionError('');}
   function logoutWithCartReset(){changeCart([]);setRecentIds([]);visitSignals.enable(false);return onLogout();}
   const [selectedProduct, setSelectedProduct] = useState(null);
+  // WhatsApp number of the listing's owner, shown only if they chose to share it.
+  const [sellerContact, setSellerContact] = useState(null);
+  useEffect(() => {
+    setSellerContact(null);
+    if (!selectedProduct || !user) return;
+    let active = true;
+    supabase.from('marketplace_profiles').select('whatsapp,show_whatsapp').eq('id', selectedProduct.user_id).maybeSingle()
+      .then(({ data }) => { if (active) setSellerContact(data); });
+    return () => { active = false; };
+  }, [selectedProduct?.id, user]);
   const linkedProductId=useProductLink();
   const [productLinkError,setProductLinkError]=useState('');
   const [products, setProducts] = useState([]);
@@ -179,6 +190,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
     return () => {mounted.current = false;};
   }, []);
   const [featuresReady, setFeaturesReady] = useState(false);
+  const unreadMessages=useUnreadMessages(user,featuresReady);
   useEffect(()=>{if(!linkedProductId)return;let active=true;if(linkedProductId==='invalid'){Promise.resolve().then(()=>{if(active)setProductLinkError('This product link is invalid.');});return()=>{active=false;};}supabase.from(featuresReady?'marketplace_listings':'listings').select('*').eq('id',linkedProductId).maybeSingle().then(({data,error})=>{if(!active)return;if(error||!data||data.deleted_at||listingDomain(data)!=='shopping'){setProductLinkError('This product is unavailable or you do not have access.');setSelectedProduct(null);}else{setProductLinkError('');setSelectedProduct(data);}}).catch(()=>{if(active)setProductLinkError('The product link could not be loaded. Please retry.');});return()=>{active=false;};},[linkedProductId,featuresReady]);
   const [availabilityMode, setAvailabilityMode] = useState("now");
   const [clockOffset, setClockOffset] = useState(0);
@@ -505,7 +517,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
     <div className={`app-shell ${compareIds.length?'has-comparison':''}`}>
       <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="topbar">
-        <details className="nav-menu" ref={menuRef} onKeyDown={event=>{if(event.key==='Escape'){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus();}}}><summary aria-label="Open ZamNexus navigation"><Icon name="menu"/></summary><div className="nav-menu-panel"><span className="eyebrow">YOUR ZAMNEXUS</span><nav aria-label="All services and pages">{[...desktopNavigation,...moreNavigation].map(([name,icon])=><button key={name} className={[desktopNavigation.some(row=>row[0]===name)?'dup-desktop':'',desktopNavigation.some(row=>row[0]===name)?'dup-bottom':''].join(' ').trim()||undefined} onClick={()=>goTo(navPage(name))}><Icon name={icon} size={18}/>{name==='Post'?'Sell':name}</button>)}</nav><InstallApp/><ThemeControl/></div></details>
+        <details className="nav-menu" ref={menuRef} onKeyDown={event=>{if(event.key==='Escape'){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus();}}}><summary aria-label="Open ZamNexus navigation"><Icon name="menu"/></summary><div className="nav-menu-panel"><span className="eyebrow">YOUR ZAMNEXUS</span><nav aria-label="All services and pages">{[...desktopNavigation,...moreNavigation].map(([name,icon])=><button key={name} className={[desktopNavigation.some(row=>row[0]===name)?'dup-desktop':'',desktopNavigation.some(row=>row[0]===name)?'dup-bottom':''].join(' ').trim()||undefined} onClick={()=>goTo(navPage(name))}><Icon name={icon} size={18}/>{name==='Post'?'Sell':name}{name==='Messages'&&unreadMessages>0&&<span className="nav-badge">{unreadMessages>99?'99+':unreadMessages}</span>}</button>)}</nav><InstallApp/><ThemeControl/></div></details>
         <button className="brand" onClick={() => goTo("Home")}>
           <Brand />
         </button>
@@ -539,7 +551,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
         <button className="notification-trigger" aria-label="Open notifications" onClick={()=>goTo('Notifications')}><Icon name="bell"/></button>
       </header>
       <nav className="account-nav" aria-label="Desktop navigation">
-        {desktopNavigation.map(([name])=><button key={name} aria-current={navCurrent(name,page)?'page':undefined} onClick={()=>goTo(navPage(name))}>{name==='Post'?'Sell':name}</button>)}
+        {desktopNavigation.map(([name])=><button key={name} aria-current={navCurrent(name,page)?'page':undefined} onClick={()=>goTo(navPage(name))}>{name==='Post'?'Sell':name}{name==='Messages'&&unreadMessages>0&&<span className="nav-badge">{unreadMessages>99?'99+':unreadMessages}</span>}</button>)}
       </nav>
 
       <main id="main-content">
@@ -600,9 +612,13 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
                 <button className="text-button" onClick={()=>{setSafetyTarget({kind:'listing',reference:String(selectedProduct.id)});goTo('Safety');}}>Prepare a listing report</button><button className="secondary-button" onClick={()=>addToCart(selectedProduct)}>Add to cart preview</button><button className="text-button" onClick={()=>goTo('Cart')}>Open cart ({cartLines.reduce((sum,row)=>sum+row.quantity,0)})</button><button className="secondary-button compare-product" aria-pressed={compareIds.includes(String(selectedProduct.id))} onClick={()=>toggleCompare(selectedProduct.id)}>{compareIds.includes(String(selectedProduct.id))?'Remove from comparison':'Compare product'}</button>
                 {user?.id === selectedProduct.user_id ?
                   <button className="primary-button" onClick={() => goTo("My Listings")}>Manage my listings</button> :
-                  <button className="primary-button" disabled={startingConversation} onClick={() => messageSeller(selectedProduct)}>
-                    {startingConversation ? "Opening..." : "Message Seller"}
-                  </button>}
+                  <span className="listing-actions">
+                    <button className="primary-button" disabled={startingConversation} onClick={() => messageSeller(selectedProduct)}>
+                      {startingConversation ? "Opening..." : "Message Seller"}
+                    </button>
+                    {sellerContact?.show_whatsapp && sellerContact.whatsapp &&
+                      <a className="secondary-button" href={`https://wa.me/${sellerContact.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi, is the "${selectedProduct.title}" still available?`)}`} target="_blank" rel="noopener noreferrer">WhatsApp Seller</a>}
+                  </span>}
               </div>
             </div>
           </section>
@@ -869,6 +885,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
           >
             <span><Icon name={icon} size={22}/></span>
             <small>{name==='Account'&&!user?'Sign In':name}</small>
+            {name==='Messages'&&unreadMessages>0&&<span className="nav-badge">{unreadMessages>99?'99+':unreadMessages}</span>}
           </button>
         ))}
       </nav>

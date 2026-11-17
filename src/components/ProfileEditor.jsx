@@ -4,7 +4,7 @@ import {Icon} from './Design';
 import {profileInput,contactFields} from '../lib/profiles';
 import {validatePhoto} from '../lib/listings';
 
-const labels={whatsapp:'WhatsApp number',phone:'Phone number'};
+const labels={whatsapp:'WhatsApp number'};
 export default function ProfileEditor({user,profile,onSaved,onCancel}) {
   const [draft,setDraft]=useState(null);
   const [reviewing,setReviewing]=useState(false);
@@ -41,7 +41,7 @@ export default function ProfileEditor({user,profile,onSaved,onCancel}) {
   return <section className="form-page profile-setup"><div className="page-icon"><Icon name="user" size={25}/></div>
     <span className="eyebrow">{reviewing?'REVIEW BEFORE YOU CONTINUE':'MAKE YOURSELF AT HOME'}</span>
     <h1>{reviewing?'Does everything look right?':profile?'Edit your profile.':'Set up your profile.'}</h1>
-    <p>Your sign-in email is only used to sign in — it stays private and never appears on your profile. Add a phone number, and WhatsApp if you use it, so people can reach you. Nothing is public unless you choose to show it.</p>
+    <p>Your sign-in email is only used to sign in — it stays private and never appears on your profile. Add your WhatsApp number so people can reach you; it stays hidden unless you choose to show it.</p>
     {error&&<p role="alert" className="auth-error">{error}</p>}
     {reviewing?<><div className="profile-review">
       {preview&&<img className="profile-avatar" src={preview} alt="Your selected avatar"/>}
