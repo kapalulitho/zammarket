@@ -36,15 +36,22 @@ CREATE POLICY zammarket_likes_read_owner_guard ON public.likes
   AS RESTRICTIVE FOR SELECT TO authenticated
   USING (user_id = (SELECT auth.uid()));
 
--- Return counts only; never return the identities of people who saved a listing.
+-- Return counts only for existing, non-deleted listings; never expose saver identities.
+-- Bound the request size to prevent a caller submitting an excessive ID array.
 CREATE OR REPLACE FUNCTION public.public_listing_like_counts(p_listing_ids text[])
 RETURNS TABLE(listing_id text, like_count bigint)
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
   SELECT l.listing_id::text, count(*)::bigint
   FROM public.likes AS l
   WHERE (SELECT auth.uid()) IS NOT NULL
-    AND p_listing_ids IS NOT NULL
+    AND cardinality(p_listing_ids) BETWEEN 1 AND 100
     AND l.listing_id::text = ANY(p_listing_ids)
+    AND EXISTS (
+      SELECT 1
+      FROM public.listings AS listing
+      WHERE listing.id::text = l.listing_id::text
+        AND listing.deleted_at IS NULL
+    )
   GROUP BY l.listing_id
 $$;
 REVOKE ALL ON FUNCTION public.public_listing_like_counts(text[]) FROM PUBLIC, anon, authenticated;
