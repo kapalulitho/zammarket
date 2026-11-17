@@ -1,7 +1,7 @@
-export const contactFields = ['whatsapp','phone','public_email','location','address'];
-export function profileInput(values, loginEmail = '') {
+export const contactFields = ['phone','whatsapp'];
+export function profileInput(values) {
   const result = {};
-  for (const [key,max] of Object.entries({username:30,shop_name:60,whatsapp:18,phone:18,public_email:254,location:120,address:300})) {
+  for (const [key,max] of Object.entries({username:30,shop_name:60,phone:18,whatsapp:18})) {
     result[key] = String(values[key] ?? '').trim();
     if (result[key].length > max) throw new Error(`${key.replaceAll('_',' ')} is too long.`);
   }
@@ -12,10 +12,13 @@ export function profileInput(values, loginEmail = '') {
   if (!['individual','business'].includes(result.account_type)) throw new Error('Choose your account type.');
   for (const field of ['whatsapp','phone']) {
     result[field] = result[field].replace(/[ ()-]/g,'');
-    if (result[field] && !/^\+[1-9]\d{6,14}$/.test(result[field])) throw new Error('Use an international phone number, for example +260971234567.');
+    // Zambian habit: accept local format (0971234567) and normalise it
+    // to international (+260971234567) before the strict check.
+    if (/^0\d{9}$/.test(result[field])) result[field] = '+260' + result[field].slice(1);
+    else if (/^260\d{9}$/.test(result[field])) result[field] = '+' + result[field];
+    if (result[field] && !/^\+[1-9]\d{6,14}$/.test(result[field])) throw new Error('Check the number — for example 0971234567 or +260971234567.');
   }
-  if (result.public_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.public_email)) throw new Error('Enter a valid public contact email.');
-  if (result.public_email && result.public_email.toLowerCase() === loginEmail.trim().toLowerCase()) throw new Error('Use a different public contact email to keep your login email private.');
+  // The login email is only for sign-in and is never part of the public profile.
   for (const field of contactFields) result[`show_${field}`] = values[`show_${field}`] === true || values[`show_${field}`] === 'on';
   return result;
 }

@@ -26,6 +26,11 @@ export default function Messages({ user, ready, initialConversation, initialDraf
   const [hasOlder, setHasOlder] = useState(false);
   const [limit, setLimit] = useState(100);
   const [search, setSearch] = useState('');
+  // Public contact details of the other participant — only shown when they
+  // chose to share them, so in-app chat can hand over to WhatsApp or a call.
+  const [contact, setContact] = useState(null);
+  const conversation = conversations.find(item => item.id === selected);
+  const otherId = conversation && user ? (conversation.seller_id === user.id ? conversation.buyer_id : conversation.seller_id) : null;
 
   useEffect(() => {
     if (!user || !ready) return;
@@ -65,6 +70,17 @@ export default function Messages({ user, ready, initialConversation, initialDraf
       .catch(() => { if (active) setListings({}); });
     return () => { active = false; };
   }, [user, ready, conversationKey]);
+
+  // Shared contact details of the person on the other side of this thread.
+  useEffect(() => {
+    setContact(null);
+    if (!otherId || !user || !ready) return;
+    let active = true;
+    supabase.from('marketplace_profiles')
+      .select('phone,whatsapp,show_phone,show_whatsapp').eq('id', otherId).maybeSingle()
+      .then(({ data }) => { if (active) setContact(data); });
+    return () => { active = false; };
+  }, [otherId, user, ready]);
 
   useEffect(() => {
     if (!selected || !user || !ready) return;
@@ -108,7 +124,6 @@ export default function Messages({ user, ready, initialConversation, initialDraf
     <button className="primary-button" onClick={onLogin}>Sign In</button></section>;
   if (!ready) return <section className="form-page centered-page"><EmptyArt name="message" /><h1>Conversations are coming.</h1>
     <p>We're getting messaging ready. In the meantime, keep exploring local finds.</p></section>;
-  const conversation = conversations.find(item => item.id === selected);
   const selectedListing = conversation ? listings[String(conversation.listing_id)] : null;
   return <section className="form-page"><div className="page-icon"><Icon name="message" size={25} /></div><span className="eyebrow">KEEP THE CONVERSATION GOING</span><h1>Your inbox.</h1>
     <p className="muted">Conversations refresh every five seconds.</p>
@@ -159,6 +174,15 @@ export default function Messages({ user, ready, initialConversation, initialDraf
         ) : (
           <p className="muted">This listing is no longer available, but the conversation is kept.</p>
         ))}
+        {contact && (conversation?.seller_id === user.id ? contact.show_phone && contact.phone : (contact.show_phone && contact.phone) || (contact.show_whatsapp && contact.whatsapp)) &&
+          <div className="thread-contact">
+            <span>Reach {conversation?.seller_id === user.id ? 'this buyer' : 'the seller'} directly:</span>
+            {contact.show_whatsapp && contact.whatsapp && conversation?.seller_id !== user.id &&
+              <a className="text-button" href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">WhatsApp seller</a>}
+            {contact.show_phone && contact.phone &&
+              <a className="text-button" href={`tel:${contact.phone}`}>Call {conversation?.seller_id === user.id ? 'buyer' : 'seller'}</a>}
+            <small>Shown because they chose to share it.</small>
+          </div>}
         {hasOlder && <button onClick={() => setLimit(value => value + 100)}>Load older messages</button>}
         <div className="message-history" role="log" aria-label="Conversation messages" aria-live="polite">
           {messages.map(message => <div className={`message ${message.sender_id === user.id ? 'mine' : ''}`} key={message.id}>

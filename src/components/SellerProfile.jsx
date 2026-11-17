@@ -238,16 +238,7 @@ export default function SellerProfile({
             </p>
           )}
 
-          {publicProfile.public_email && (
-            <p>
-              <a href={`mailto:${publicProfile.public_email}`}>
-                {publicProfile.public_email}
-              </a>
-            </p>
-          )}
-
           {publicProfile.location && <p>{publicProfile.location}</p>}
-          {publicProfile.address && <p>{publicProfile.address}</p>}
         </div>
       )}
 

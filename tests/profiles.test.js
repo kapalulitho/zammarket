@@ -11,9 +11,11 @@ test('profile names required, normalized, and contact visibility defaults privat
  assert.throws(()=>profileInput({...values,shop_name:' '}));
  assert.throws(()=>profileInput({...values,account_type:'admin'}));
 });
-test('login email stays private and phones require international format',()=>{
- assert.throws(()=>profileInput({...values,public_email:'PRIVATE@example.invalid'},'private@example.invalid'));
- assert.throws(()=>profileInput({...values,phone:'0971234567'}));
+test('login email is never public and local numbers normalise to +260',()=>{
+ assert.equal(profileInput({...values,public_email:'PRIVATE@example.invalid'}).public_email,undefined);
+ assert.equal(profileInput({...values,phone:'0971234567'}).phone,'+260971234567');
+ assert.equal(profileInput({...values,whatsapp:'260971234567'}).whatsapp,'+260971234567');
+ assert.throws(()=>profileInput({...values,phone:'12345'}));
  const p=profileInput({...values,phone:'+260 971 234 567',show_phone:'on'});
  assert.equal(p.phone,'+260971234567');assert.equal(p.show_phone,true);
 });
