@@ -5,7 +5,7 @@ import ProductCard from './ProductCard';
 import {campuses,campusById,campusOf} from '../lib/campuses';
 const KEY='zamnexus_campus';
 const read=()=>{try{return campusById(localStorage.getItem(KEY));}catch{return null;}};
-const tiles=[['Shop',null,'bag'],['Food','Food','food'],['Services','Services','user'],['Accommodation','Stays','home'],['Events','Events','calendar'],['Study','','book'],['Campus updates','','message']];
+const tiles=[['Shop',null,'bag'],['Food','Food','food'],['Services','Services','user'],['Accommodation','Stays','home'],['Events','Events','calendar']];
 export default function Campuses({products=[],onOpen,money,onNavigate,onPost}){
   const [campus,setCampus]=useState(read);
   function choose(item){try{if(item)localStorage.setItem(KEY,item.id);else localStorage.removeItem(KEY);}catch{/* private mode */}setCampus(item);}

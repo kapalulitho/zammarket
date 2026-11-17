@@ -84,7 +84,6 @@ const BusinessWorkspace=lazy(()=>import('./components/BusinessWorkspace'));
 const BusinessServiceDirectory=lazy(()=>import('./components/BusinessServiceDirectory'));
 
 const SavedSearches=lazy(()=>import('./components/SavedSearches'));
-const RecommendationShelf=lazy(()=>import('./components/RecommendationShelf'));
 const LocalVerticalMarketplace=lazy(()=>import('./components/LocalVerticalMarketplace'));
 const ModuleMarketplace=lazy(()=>import('./components/ModuleMarketplace'));
 const Storefronts=lazy(()=>import('./components/Storefronts'));
@@ -557,7 +556,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
       <main id="main-content">
         
         {backTo&&returnPages.includes(page)&&<button type="button" className="back-link" onClick={()=>goTo(backTo)}>← Back to {categoryLabels[backTo]||backTo}</button>}
-        {['Explore','Stays','Logistics','Agriculture','Digital','Property','Delivery','Food','Events','Jobs','Learning','Services'].includes(page)&&<SectionHeader category={page} onAction={categoryAction} onBack={()=>window.history.length>1?window.history.back():goTo('Directory')} notice={categoryNotice.page===page?categoryNotice.text:''}/>}
+        {['Explore','Stays','Logistics','Agriculture','Digital','Property','Delivery','Food','Events','Jobs','Learning','Services'].includes(page)&&<SectionHeader category={page} actions={page==='Explore'||page==='Property'||page==='Food'} onAction={categoryAction} onBack={()=>window.history.length>1?window.history.back():goTo('Directory')} notice={categoryNotice.page===page?categoryNotice.text:''}/>}
         <Suspense fallback={<section className="session-screen" role="status"><span className="session-spinner"/><p>Loading your page...</p></section>}>
         {actionError && <p role="alert" className="app-notice">{actionError}</p>}
         {linkedProductId&&productLinkError&&<p role="alert" className="app-notice">{productLinkError} <button onClick={()=>goTo('Home')}>Browse products</button></p>}
@@ -613,7 +612,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
                 {user?.id === selectedProduct.user_id ?
                   <button className="primary-button" onClick={() => goTo("My Listings")}>Manage my listings</button> :
                   <span className="listing-actions">
-                    <button className="primary-button" disabled={startingConversation} onClick={() => messageSeller(selectedProduct)}>
+                    <button className="primary-button" disabled={startingConversation||(user&&!featuresReady)} onClick={() => messageSeller(selectedProduct)}>
                       {startingConversation ? "Opening..." : "Message Seller"}
                     </button>
                     {sellerContact?.show_whatsapp && sellerContact.whatsapp &&
