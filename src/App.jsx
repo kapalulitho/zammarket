@@ -60,7 +60,6 @@ const AccountHistory=lazy(()=>import('./components/AccountHistory'));
 const MyActivity=lazy(()=>import('./components/MyActivity'));
 const Campuses=lazy(()=>import('./components/Campuses'));
 const Advertise=lazy(()=>import('./components/Advertise'));
-const AccountHub=lazy(()=>import('./components/AccountHub'));
 const activityPages=['Orders','Saved','Cart','My Listings','History','Order Centre','Enquiries','Notifications'];
 const accountPages=['Profile','Business','Workspace','Safety'];
 const navPage=name=>name==='Explore'?'Directory':name;
@@ -536,7 +535,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
         <button className="header-signin" disabled={logoutBusy} onClick={user?logoutWithCartReset:onLogin}>
           {user ? logoutBusy ? "Signing out..." : "Log out" : "Sign In"}
         </button>
-        <button className="profile-trigger" aria-label={user?'Open profile':'Sign in'} onClick={()=>goTo('Profile')}><Icon name="user"/></button>
+        <button className="profile-trigger" aria-label={user?'Open profile':'Sign in'} onClick={()=>user?goTo('Profile'):onLogin()}><Icon name="user"/></button>
         <button className="notification-trigger" aria-label="Open notifications" onClick={()=>goTo('Notifications')}><Icon name="bell"/></button>
       </header>
       <nav className="account-nav" aria-label="Desktop navigation">
@@ -621,15 +620,12 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
           <Campuses products={products} onOpen={openProduct} money={money} onNavigate={goTo} onPost={startProductPost} />
         ) : page === "My Activity" && user ? (
           <MyActivity onNavigate={goTo} />
-        ) : page === "Account" && user ? (
-          <AccountHub user={user} profile={profile} onNavigate={goTo} onLogout={logoutWithCartReset} logoutBusy={logoutBusy} />
-        ) : page === "Profile" && user ? (
+        ) : (page === "Account" || page === "Profile") && user ? (
           <AccountProfile key={user.id} user={user} profile={profile} onProfileSaved={onProfileSaved} onNavigate={goTo} onLogout={logoutWithCartReset} logoutBusy={logoutBusy} />
         ) : page === "Post" ? (
           <section className="form-page">
             <button className="back-button" onClick={() => postKind==='product'?setPostKind(null):goTo("Home")}>← Back</button>
             <div className="page-icon"><Icon name="bag" size={25}/></div>
-            <span className="eyebrow">SOMETHING GREAT TO SHARE?</span>
             <h1>{postKind==='product'?'Post a product':'What do you want to post?'}</h1>{postKind!=='product'&&<PostChooser onProduct={()=>setPostKind('product')} onNavigate={goTo}/>}
             {postKind==='product'&&(<form ref={postFormRef} onSubmit={event=>{if(postStep<3){event.preventDefault();postNext();return;}handlePost(event);}}>
 <p className="post-progress">Step {postStep} of 3</p>
