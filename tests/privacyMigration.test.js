@@ -16,7 +16,9 @@ test('public likes migration restricts row reads to the signed-in owner', () => 
 test('public likes RPC exposes only listing identifiers and aggregate counts', () => {
   assert.match(sql, /RETURNS TABLE\(listing_id text, like_count bigint\)/);
   assert.match(sql, /count\(\*\)::bigint/);
-  assert.match(sql, /GRANT EXECUTE ON FUNCTION public\.public_listing_like_counts\(text\[\]\) TO anon, authenticated/);
+  assert.match(sql, /GRANT EXECUTE ON FUNCTION public\.public_listing_like_counts\(text\[\]\) TO authenticated/);
+  assert.match(sql, /WHERE \(SELECT auth\.uid\(\)\) IS NOT NULL/);
+  assert.match(sql, /DROP POLICY IF EXISTS zammarket_likes_read ON public\.likes/);
 });
 
 test('public participant details use the privacy-filtered profile RPC', () => {
