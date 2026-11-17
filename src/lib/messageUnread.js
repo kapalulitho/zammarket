@@ -7,7 +7,15 @@ export function loadReads(){
   catch{return{};}
 }
 export function saveReads(map){try{localStorage.setItem(KEY,JSON.stringify(map));}catch{/* storage unavailable */}}
-export function markConversationRead(conversationId,reads){return {...reads,[conversationId]:new Date().toISOString()};}
+export function markConversationRead(conversationId,reads,latestCreatedAt){
+  // Stamp with the server time of the newest message actually shown, not the
+  // device clock: device/server clock skew would otherwise make just-read
+  // messages count as unread again seconds later.
+  const stamp=typeof latestCreatedAt==='string'?latestCreatedAt:new Date().toISOString();
+  const prior=reads[conversationId];
+  if(prior&&new Date(prior)>new Date(stamp))return reads; // never move the cutoff backwards
+  return {...reads,[conversationId]:stamp};
+}
 export function unreadByConversation(rows,userId,reads){
   const counts={};
   for(const row of rows){

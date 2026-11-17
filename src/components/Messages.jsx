@@ -115,11 +115,13 @@ export default function Messages({ user, ready, initialConversation, initialDraf
           .order('id', { ascending: false }).limit(limit + 1);
         if (failure) throw failure;
         if (active) {
-          setHasOlder((data?.length ?? 0) > limit);
-          setMessages((data ?? []).slice(0, limit).reverse());
+          const rows = data ?? [];
+          setHasOlder(rows.length > limit);
+          setMessages(rows.slice(0, limit).reverse());
           setError('');
           // Viewing this thread counts as reading it, so the unread badge drops.
-          saveReads(markConversationRead(selected, loadReads()));
+          // Rows are newest-first, so the first row carries the newest server time.
+          saveReads(markConversationRead(selected, loadReads(), rows[0]?.created_at));
         }
       } catch { if (active) setError('Unable to refresh messages. Please retry.'); }
     }
