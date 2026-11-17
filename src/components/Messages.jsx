@@ -65,15 +65,16 @@ export default function Messages({ user, ready, initialConversation, initialDraf
     const ids = [...new Set(conversations.map(item => item.seller_id === user.id ? item.buyer_id : item.seller_id).filter(Boolean))];
     if (!ids.length) { setProfiles({}); return; }
     let active = true;
-    supabase.from('marketplace_profiles')
-      .select('id,username,shop_name,account_type').in('id', ids)
-      .then(({ data }) => {
-        if (!active) return;
-        const next = {};
-        for (const row of data ?? []) next[row.id] = row;
-        setProfiles(next);
-      })
-      .catch(() => { if (active) setProfiles({}); });
+    Promise.all(ids.map(async id => {
+      const { data, error } = await supabase.rpc('public_seller_profile', { p_user_id: id });
+      if (error) throw error;
+      return data;
+    })).then(rows => {
+      if (!active) return;
+      const next = {};
+      for (const row of rows.filter(Boolean)) next[row.id] = row;
+      setProfiles(next);
+    }).catch(() => { if (active) setProfiles({}); });
     return () => { active = false; };
   }, [user, ready, otherKey]);
   useEffect(() => {
@@ -99,9 +100,8 @@ export default function Messages({ user, ready, initialConversation, initialDraf
     setContact(null);
     if (!otherId || !user || !ready) return;
     let active = true;
-    supabase.from('marketplace_profiles')
-      .select('whatsapp,show_whatsapp').eq('id', otherId).maybeSingle()
-      .then(({ data }) => { if (active) setContact(data); });
+    supabase.rpc('public_seller_profile', { p_user_id: otherId })
+      .then(({ data, error }) => { if (active && !error) setContact(data); });
     return () => { active = false; };
   }, [otherId, user, ready]);
 
@@ -198,7 +198,7 @@ export default function Messages({ user, ready, initialConversation, initialDraf
         ) : (
           <p className="muted">This listing is no longer available, but the conversation is kept.</p>
         ))}
-        {contact?.show_whatsapp && contact.whatsapp &&
+        {contact?.whatsapp &&
           <div className="thread-contact">
             <span>WhatsApp {otherId ? partyName(otherId) : 'them'} directly:</span>
             <a className="text-button" href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">Open WhatsApp</a>
