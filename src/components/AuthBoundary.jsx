@@ -34,6 +34,8 @@ function AuthForm({mode}) {
           const {data,error:failure}=await supabase.auth.signUp({email:address,password:String(form.password)});
           if(failure)throw failure;
           if(data?.session){await supabase.auth.signOut({scope:'local'});throw new Error('Registration configuration unavailable');}
+          // Enumeration-safe duplicate signal: an existing account comes back with no linked identities.
+          if(data?.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0)throw new Error('user_already_exists');
           setEmail(address);setStep('code');markCodeRequested();
         } else if(useCode) {
           const {error:failure}=await supabase.auth.signInWithOtp({email:address,options:{shouldCreateUser:false}});if(failure)throw failure;setEmail(address);setStep('code');markCodeRequested();
@@ -46,7 +48,12 @@ function AuthForm({mode}) {
         await verifyEmailCode(supabase.auth,email,form.code,!useCode);
         // The Auth subscription opens Home. Do not manufacture a local login flag.
       }
-    } catch (failure) {setError(failure.message === 'Registration configuration unavailable' ? 'Registration is not available right now. Please try again later.' : failure.message === 'Passwords do not match.' ? failure.message : step === 'email' ? mode === 'signup' ? 'Unable to register. Check your details and password requirements, then retry.' : 'Sign-in failed. Check your email/password and verify your email first.' : otpErrorMessage(failure));}
+    } catch (failure) {
+      // One account per email: surface it plainly whether Supabase reports it as an
+      // error code, an "already registered" message, or the enumeration-safe fake success.
+      const duplicate=failure.code==='user_already_exists'||failure.message==='user_already_exists'||/already (registered|exists)/i.test(failure.message||'');
+      setError(duplicate ? 'One account per email. This email already has an account — sign in instead, or use a different email.' : failure.message === 'Registration configuration unavailable' ? 'Registration is not available right now. Please try again later.' : failure.message === 'Passwords do not match.' ? failure.message : step === 'email' ? mode === 'signup' ? 'Unable to register. Check your details and password requirements, then retry.' : 'Sign-in failed. Check your email/password and verify your email first.' : otpErrorMessage(failure));
+    }
     finally {setBusy(false);}
   }
   return <section className="form-page auth-page">
