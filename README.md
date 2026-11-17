@@ -1,4 +1,4 @@
-# ZamMarket
+# ZamNexus
 
 A React and Vite marketplace for Zambia, using Supabase Auth, Postgres, and Storage.
 
