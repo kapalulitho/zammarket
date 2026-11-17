@@ -255,11 +255,19 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
 
   useEffect(() => {
     const syncPage = () => {
-      setPage(pageFromPath(window.location.pathname));
-      setSelectedProduct(null); setSeller(null);
+      const path = window.location.pathname;
+      setPage(pageFromPath(path));
+      setSelectedProduct(null);
+      // /seller restores the remembered seller so back/forward and refresh keep the view.
+      setSeller(path==='/seller'?restoreSeller():null);
     };
     window.addEventListener("popstate",syncPage);
     return () => window.removeEventListener("popstate",syncPage);
+  }, []);
+
+  // Full refresh on /seller: no popstate fires, so restore the remembered seller once on mount.
+  useEffect(() => {
+    if(window.location.pathname==='/seller')setSeller(current=>current??restoreSeller());
   }, []);
 
   useEffect(() => {
@@ -430,7 +438,15 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
     window.scrollTo({ top: 0, behavior: scrollBehavior() });
   }
   function openInterest(row){if(row.kind==='product'){const product=products.find(item=>String(item.id)===row.id);if(product){openProduct(product);return;}}if(row.kind==='search'){setSearch(row.label);goTo('Explore');return;}goTo(row.kind==='event'?'Events':row.kind==='service'?(['Services','Events','Jobs','Learning','Property','Delivery','Food','Agriculture','Digital'].includes(row.id)?row.id:'Services'):'Explore');}
-  function openSeller(nextSeller){if(linkedProductId)selectProductLink(null);setSeller(nextSeller);setSelectedProduct(null);setPage('Seller');window.scrollTo({top:0,behavior:scrollBehavior()});}
+  function openSeller(nextSeller){
+    if(linkedProductId)selectProductLink(null);
+    setSeller(nextSeller);setSelectedProduct(null);
+    // The seller view gets a real URL and survives refresh: the opened seller
+    // is remembered on this device and restored when /seller is revisited.
+    try{sessionStorage.setItem('zammarket_seller',JSON.stringify(nextSeller??null));}catch{/* storage unavailable */}
+    navigate('/seller');
+    window.scrollTo({top:0,behavior:scrollBehavior()});
+  }
   function openCommunity(item){goTo({event:'Events',job:'Jobs',service:'Services',learning:'Learning'}[item.kind]);setCommunityEntry(item);}
 
   async function addPhotos(fileList) {
@@ -621,7 +637,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
               </div>
             </div>
           </section>
-        ) : ['Stays','Logistics'].includes(page)? <BusinessServiceDirectory key={`${page}-${user?.id||'guest'}`} kind={page} user={user} initialSearch={search} onNavigate={goTo}/> : ['Agriculture','Digital'].includes(page)? <LocalVerticalMarketplace key={page} kind={page} user={user} initialSearch={search} onNavigate={goTo}/> : ['Events','Jobs','Services','Learning'].includes(page)? <ModuleMarketplace key={`${page}-${user?.id||'guest'}`} onNavigate={goTo} onActivity={recordDiscovery} kind={{Events:'event',Jobs:'job',Services:'service',Learning:'learning'}[page]} user={user} onLogin={onLogin} onSeller={openSeller} initialEntry={communityEntry} initialSearch={search}/> : page==='Directory'? <ServicesDirectory onNavigate={goTo}/> : page==='Property'? <PropertyMarketplace key={user?.id||'guest-property'} initialSearch={search} user={user} onLogin={onLogin} onSeller={openSeller} onNavigate={goTo} intent={categoryIntent.page==='Property'?categoryIntent:null}/> : page==='Delivery'? <DeliveryWorkspace key={user?.id||'guest-delivery'} user={user} onLogin={onLogin} onNavigate={goTo}/> : page==='Food'? <FoodMarketplace initialSearch={search} onNavigate={goTo} intent={categoryIntent.page==='Food'?categoryIntent:null}/> : page==='Shops'? <Storefronts user={user} onSeller={openSeller} onNavigate={goTo} search={search}/> : page==='Storefront'&&user? <Storefronts user={user} profile={profile} edit onNavigate={goTo}/> : page==='Inventory'&&user? <InventoryDashboard user={user} onNavigate={goTo}/> : page==='Promotions'&&user? <RevenueHub user={user} onNavigate={goTo}/> : page==='Notifications'&&user? <NotificationInbox user={user} onNavigate={goTo}/> : page==='Enquiries'&&user? <EnquiryInbox user={user}/> : page==='Cart'? <ProductCart loading={loading} loadError={loadError} onRefresh={loadProducts} lines={cartLines} products={products} now={now} onChange={changeCart} onNavigate={goTo}/> : page==='Orders'? <PurchasePlanner key={user?.id||'guest'} lines={cartLines} products={products} now={now} onNavigate={goTo}/> : page==='Revenue Operations'&&user? <RevenueOperations key={user.id} user={user} onNavigate={goTo}/> : page==='Secure Operations'&&user? <SecureOperations key={user.id} user={user} onNavigate={goTo}/> : page==='History'&&user? <AccountHistory key={user.id} user={user} onNavigate={goTo}/> : page==='Admin Review'&&user? <AdminReviewOperations key={user.id} user={user} onNavigate={goTo}/> : page==='Digital Library'&&user? <DigitalLibrary key={user.id} user={user} onNavigate={goTo}/> : ['Accommodation Operations','Event Operations'].includes(page)&&user? <CapacityOperations key={page+user.id} kind={page==='Event Operations'?'event':'stay'} user={user} onNavigate={goTo}/> : workPageKinds[page]&&user? <WorkOperations key={page+user.id} kind={workPageKinds[page]} user={user} onNavigate={goTo}/> : page==='Order Centre'&&user? <ShopOrderCentre key={user.id} user={user} products={products} lines={cartLines} onNavigate={goTo}/> : page==='Food Operations'&&user? <FoodOperations key={user.id} user={user} onNavigate={goTo}/> : page==='Delivery Operations'&&user? <DeliveryOperations key={user.id} user={user} onNavigate={goTo}/> : page==='Workspace'&&user? <CustomerWorkspace onNavigate={goTo} recentProducts={recentProducts} onOpen={openProduct}/> : page==='Admin'&&user? <AdminFoundation key={user.id} user={user} onNavigate={goTo}/> : page==='Safety'&&user? <SafetyWorkspace key={user.id+(safetyTarget?.reference||'')} initialTarget={safetyTarget} user={user} onNavigate={goTo}/> : page==='Business'&&user? <BusinessWorkspace key={user.id} user={user} profile={profile} ready={featuresReady} onNavigate={navPost}/> : page==='Compare'? <CompareProducts items={comparisonProducts} onRemove={toggleCompare} onOpen={openProduct} onBrowse={()=>goTo('Explore')} formatMoney={money} now={now}/> : page === "Messages" ? (
+        ) : ['Stays','Logistics'].includes(page)? <BusinessServiceDirectory key={`${page}-${user?.id||'guest'}`} kind={page} user={user} initialSearch={search} onNavigate={goTo}/> : ['Agriculture','Digital'].includes(page)? <LocalVerticalMarketplace key={page} kind={page} user={user} initialSearch={search} onNavigate={goTo}/> : ['Events','Jobs','Services','Learning'].includes(page)? <ModuleMarketplace key={`${page}-${user?.id||'guest'}`} onNavigate={goTo} onActivity={recordDiscovery} kind={{Events:'event',Jobs:'job',Services:'service',Learning:'learning'}[page]} user={user} onLogin={onLogin} onSeller={openSeller} initialEntry={communityEntry} initialSearch={search}/> : page==='Directory'? <ServicesDirectory onNavigate={goTo}/> : page==='Property'? <PropertyMarketplace key={user?.id||'guest-property'} initialSearch={search} user={user} onLogin={onLogin} onSeller={openSeller} onNavigate={goTo} intent={categoryIntent.page==='Property'?categoryIntent:null}/> : page==='Delivery'? <DeliveryWorkspace key={user?.id||'guest-delivery'} user={user} onLogin={onLogin} onNavigate={goTo}/> : page==='Food'? <FoodMarketplace initialSearch={search} onNavigate={goTo} intent={categoryIntent.page==='Food'?categoryIntent:null}/> : page==='Shops'? <Storefronts user={user} onSeller={openSeller} onNavigate={goTo} search={search}/> : page==='Storefront'&&user? <Storefronts user={user} profile={profile} edit onNavigate={goTo}/> : page==='Inventory'&&user? <InventoryDashboard user={user} onNavigate={goTo}/> : page==='Promotions'&&user? <RevenueHub user={user} onNavigate={goTo}/> : page==='Notifications'&&user? <NotificationInbox user={user} onNavigate={goTo}/> : page==='Enquiries'&&user? <EnquiryInbox user={user}/> : page==='Cart'? <ProductCart loading={loading} loadError={loadError} onRefresh={loadProducts} lines={cartLines} products={products} now={now} onChange={changeCart} onNavigate={goTo}/> : page==='Orders'? <PurchasePlanner key={user?.id||'guest'} lines={cartLines} products={products} now={now} onNavigate={goTo}/> : page==='Revenue Operations'&&user? <RevenueOperations key={user.id} user={user} onNavigate={goTo}/> : page==='Secure Operations'&&user? <SecureOperations key={user.id} user={user} onNavigate={goTo}/> : page==='History'&&user? <AccountHistory key={user.id} user={user} onNavigate={goTo}/> : page==='Admin Review'&&user? <AdminReviewOperations key={user.id} user={user} onNavigate={goTo}/> : page==='Digital Library'&&user? <DigitalLibrary key={user.id} user={user} onNavigate={goTo}/> : ['Accommodation Operations','Event Operations'].includes(page)&&user? <CapacityOperations key={page+user.id} kind={page==='Event Operations'?'event':'stay'} user={user} onNavigate={goTo}/> : workPageKinds[page]&&user? <WorkOperations key={page+user.id} kind={workPageKinds[page]} user={user} onNavigate={goTo}/> : page==='Order Centre'&&user? <ShopOrderCentre key={user.id} user={user} products={products} lines={cartLines} onNavigate={goTo}/> : page==='Food Operations'&&user? <FoodOperations key={user.id} user={user} onNavigate={goTo}/> : page==='Delivery Operations'&&user? <DeliveryOperations key={user.id} user={user} onNavigate={goTo}/> : page==='Workspace'&&user? <CustomerWorkspace onNavigate={goTo} recentProducts={recentProducts} onOpen={openProduct}/> : page==='Admin'&&user? <AdminFoundation key={user.id} user={user} onNavigate={goTo}/> : page==='Safety'? <SafetyWorkspace key={(user?.id??'guest')+(safetyTarget?.reference||'')} initialTarget={safetyTarget} user={user} onNavigate={goTo}/> : page==='Business'&&user? <BusinessWorkspace key={user.id} user={user} profile={profile} ready={featuresReady} onNavigate={navPost}/> : page==='Compare'? <CompareProducts items={comparisonProducts} onRemove={toggleCompare} onOpen={openProduct} onBrowse={()=>goTo('Explore')} formatMoney={money} now={now}/> : page === "Messages" ? (
           <Messages key={`${user?.id ?? "guest"}-${initialConversation ?? "inbox"}`} user={user} ready={featuresReady}
             initialConversation={initialConversation} initialDraft={initialDraft} onOpenListing={openProduct} onLogin={() => goTo("Profile")} />
         ) : page === "My Listings" && user ? (
@@ -892,6 +908,12 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
   );
 }
 function MarketplaceSession(props){return <WorkspaceProvider key={props.user?.id||'guest'} owner={props.user?.id}><Marketplace {...props}/></WorkspaceProvider>;}
+// The seller opened from a listing is remembered for this visit so the /seller
+// view survives refresh and browser navigation.
+function restoreSeller(){
+  try{const value=JSON.parse(sessionStorage.getItem('zammarket_seller'));return value&&typeof value==='object'?value:null;}
+  catch{return null;}
+}
 export default function App() {
   return <AuthBoundary component={MarketplaceSession}/>;
 }
