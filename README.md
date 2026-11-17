@@ -12,6 +12,10 @@ Explore filters, province/town posting, visit-only recently viewed products and
 comparison. Optional pages load on demand. See [product status and roadmap](docs/PRODUCT_ROADMAP.md)
 for implemented versus planned services; Orders/extra services are not live commerce systems.
 
+## Cloudflare deployment
+
+The existing deployment is configured as a Cloudflare Worker through `wrangler.jsonc`. Follow [the GitHub connection guide](docs/CLOUDFLARE_GITHUB_CONNECTION.md) to connect the existing Worker to this repository without creating a second Worker or changing its deployment name.
+
 ## Local development
 
 Install dependencies with `npm ci`, then run `npm run dev`.
