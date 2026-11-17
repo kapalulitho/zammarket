@@ -13,9 +13,11 @@ test('public likes migration restricts row reads to the signed-in owner', () => 
   assert.doesNotMatch(sql, /CREATE POLICY zammarket_likes_read ON public\.likes[\s\S]*?USING \(true\)/i);
 });
 
-test('public likes RPC exposes only listing identifiers and aggregate counts', () => {
+test('public likes RPC exposes only bounded counts for visible listings', () => {
   assert.match(sql, /RETURNS TABLE\(listing_id text, like_count bigint\)/);
   assert.match(sql, /count\(\*\)::bigint/);
+  assert.match(sql, /cardinality\(p_listing_ids\) BETWEEN 1 AND 100/);
+  assert.match(sql, /listing\.id::text = l\.listing_id::text[\s\S]*?listing\.deleted_at IS NULL/);
   assert.match(sql, /GRANT EXECUTE ON FUNCTION public\.public_listing_like_counts\(text\[\]\) TO authenticated/);
   assert.match(sql, /WHERE \(SELECT auth\.uid\(\)\) IS NOT NULL/);
   assert.match(sql, /DROP POLICY IF EXISTS zammarket_likes_read ON public\.likes/);
