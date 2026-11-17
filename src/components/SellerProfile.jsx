@@ -115,14 +115,13 @@ export default function SellerProfile({
       })
       .catch(() => {});
 
-    if (signedIn) {
-      supabase
-        .rpc('public_seller_profile', { p_user_id: seller.id })
-        .then(({ data, error: failure }) => {
-          if (active && !failure) setPublicProfile(data);
-        })
-        .catch(() => {});
-    }
+    // Public seller details are consent-filtered and open to visitors (migration 042).
+    supabase
+      .rpc('public_seller_profile', { p_user_id: seller.id })
+      .then(({ data, error: failure }) => {
+        if (active && !failure) setPublicProfile(data);
+      })
+      .catch(() => {});
 
     const query = supabase
       .from(ready ? 'marketplace_listings' : 'listings')
@@ -152,7 +151,7 @@ export default function SellerProfile({
     return () => {
       active = false;
     };
-  }, [seller.id, ready, refresh, signedIn]);
+  }, [seller.id, ready, refresh]);
 
   return (
     <section className="form-page">

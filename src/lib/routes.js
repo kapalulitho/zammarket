@@ -5,7 +5,7 @@ export function pageFromPath(path) {
   return Object.keys(pagePaths).find(page => pagePaths[page] === path) ?? 'Home';
 }
 export function authPath(path) {return ['/', '/signin', '/create-account'].includes(path);}
-export function browsePath(path) {return ['/home','/explore','/categories','/services','/agriculture','/digital-products','/events','/jobs','/learning','/directory','/delivery','/food','/property','/stays','/logistics','/shops','/compare','/campuses','/advertise','/safety'].includes(path);}
+export function browsePath(path) {return ['/home','/explore','/categories','/services','/agriculture','/digital-products','/events','/jobs','/learning','/directory','/delivery','/food','/property','/stays','/logistics','/shops','/compare','/campuses','/advertise','/safety','/seller'].includes(path);}
 export function publicPath(path) {return authPath(path) || browsePath(path);}
 export function navigate(path, replace = false) {
   if (window.location.pathname === path && !window.location.search && !window.location.hash) return;

@@ -1,5 +1,18 @@
 # Current approval package
 
+> Status update — 17 November 2026: the user ran and confirmed the following live.
+> Do not rerun these files.
+> - 042_public_seller_profile_anon_PENDING_APPROVAL.sql — applied; anon RPC verified
+>   returning 200 (null for unknown ids). Guest seller profiles verified in-browser.
+> - 014_stage3_commerce_PENDING_APPROVAL.sql — applied; stage3_commerce_capabilities
+>   verified returning inventory/verified_reviews/advertising_drafts = true.
+> - 012_message_trigger_fix — already present in the live function definition
+>   (separate tg_table_name branches, SECURITY INVOKER). The 012 script's guard
+>   correctly refuses reruns; treat as applied.
+> Note: no "022b" file exists in this folder; 022_business_foundation_HOLD_DRAFT.sql
+> remains unreviewed (HOLD) and references a business-media bucket that must be
+> provisioned before any application.
+
 > Deployment update — 29 October 2026: the user approved and reported successfully
 > applying 009 and 010, with follow-up catalog checks confirming their main objects.
 > Do not rerun these migrations. The sections below are historical review material;
