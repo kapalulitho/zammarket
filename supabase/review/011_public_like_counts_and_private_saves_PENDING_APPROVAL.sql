@@ -42,11 +42,12 @@ RETURNS TABLE(listing_id text, like_count bigint)
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
   SELECT l.listing_id::text, count(*)::bigint
   FROM public.likes AS l
-  WHERE p_listing_ids IS NOT NULL
+  WHERE (SELECT auth.uid()) IS NOT NULL
+    AND p_listing_ids IS NOT NULL
     AND l.listing_id::text = ANY(p_listing_ids)
   GROUP BY l.listing_id
 $$;
 REVOKE ALL ON FUNCTION public.public_listing_like_counts(text[]) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.public_listing_like_counts(text[]) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.public_listing_like_counts(text[]) TO authenticated;
 
 COMMIT;
