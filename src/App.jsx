@@ -30,6 +30,7 @@ import './business-foundation.css';
 import './navigation.css';
 import './ui-refresh.css';
 import './theme-premium.css';
+import './design-system.css';
 import {showDeveloperNotes} from './lib/devNotes';
 import { Brand, Icon, EmptyArt, ListingSkeletons } from "./components/Design";
 import { supabase } from "./supabase";
@@ -541,7 +542,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
           <select className="search-section-select" aria-label="Search section" value={searchScope} onChange={event=>setSearchScope(event.target.value)}><option value="current">Here</option><option value="Shops">Businesses</option>{marketplaceSections.map(([label,target])=><option key={target} value={target}>{label}</option>)}</select>
           <input
             onKeyDown={event=>{if(event.key==='Enter'){event.preventDefault();submitSectionSearch();}}} aria-label="Search products, services, jobs"
-            placeholder="Search products, services, jobs..."
+            placeholder="Search ZamNexus"
             value={search}
             onChange={(event) => {
               setSearch(event.target.value);
@@ -820,7 +821,7 @@ function Marketplace({user,profile,onProfileSaved,onLogout,logoutBusy,onLogin=()
                 <div>
                   {(page!=='Explore'||search.trim()||category!=='All Items')&&<span className="eyebrow">{page==='Saved'?'KEPT FOR ANOTHER LOOK':search.trim()?'SEARCH RESULTS':'FRESH FROM THE NEIGHBOURHOOD'}</span>}
                   {(page!=='Explore'||search.trim()||category!=='All Items')&&<ListingsHeading>{page==='Saved'?'Your saved finds.':search.trim() ? `Finds for “${search}”` : category === "All Items" ? page==='Home'?'Featured products':'Discover your next favourite.' : category}</ListingsHeading>}
-                  <p className="muted">{filteredProducts.length} listings</p>
+                  <p className="muted">{filteredProducts.length} {filteredProducts.length===1?'listing':'listings'}</p>
                 </div>
                 <select
                   className="sort-select"

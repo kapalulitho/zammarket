@@ -5,7 +5,7 @@ export function themePreference(){try{return ['light','warm','emerald','dark','s
 export function applyTheme(){
   const theme=resolveTheme(themePreference(),window.matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme=theme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme==='dark'?'#0b1220':theme==='warm'?'#F6F0E4':theme==='emerald'?'#0F3D2E':'#101C32');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme==='dark'?'#0C0E12':theme==='warm'?'#F5EFE2':theme==='emerald'?'#F0F2EB':'#F7F4EE');
 }
 export function setThemePreference(value){
   if(!['light','warm','emerald','dark','system'].includes(value))return;
